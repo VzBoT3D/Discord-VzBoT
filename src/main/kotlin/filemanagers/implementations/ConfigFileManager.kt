@@ -1,7 +1,9 @@
 package filemanagers.implementations
 
 import filemanagers.FileManager
+import net.dv8tion.jda.api.entities.TextChannel
 import org.json.JSONObject
+import vzbot.VzBot
 import java.io.File
 import java.nio.file.Files
 
@@ -37,6 +39,10 @@ class ConfigFileManager(val location: File): FileManager {
 
     fun getToken(): String {
         return json.getString("token")
+    }
+
+    fun getChannels(): List<TextChannel> {
+        return json.getJSONArray("mediaOnlyChannels").map { VzBot.jda.getTextChannelById(it.toString()) ?: error("Channel in mediaBlocker not found: $it") }
     }
 
     fun getLogChannelID(): String {

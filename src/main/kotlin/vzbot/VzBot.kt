@@ -1,6 +1,8 @@
 package vzbot
 
 import events.BotReadyEvent
+import events.MessageSendEvent
+import events.SlashCommandEvent
 import filemanagers.implementations.ConfigFileManager
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
@@ -8,8 +10,12 @@ import net.dv8tion.jda.api.entities.Guild
 import util.ChannelLogger
 import java.io.File
 
-class VzBot(val bootLocation: String) {
+class VzBot(bootLocation: String) {
 
+    /**
+     * Initialization of the VzBoT
+     * Constructor will open the connection to the bot as well to the database and load all required files
+     */
     init {
         println("Booting up vzbot.VzBot-Controller")
         configFileManager = ConfigFileManager(File("$bootLocation/VZBoT", "config.json"))
@@ -26,6 +32,8 @@ class VzBot(val bootLocation: String) {
         }
 
         jda.addEventListener(BotReadyEvent())
+        jda.addEventListener(SlashCommandEvent())
+        jda.addEventListener(MessageSendEvent())
 
     }
 
