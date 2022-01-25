@@ -1,6 +1,12 @@
 {
   "token": "",
   "logChannel": "",
-  "mediaOnlyChannels": []
+  "mediaOnlyChannels": [],
+
+  "sql_user": "root",
+  "sql_password": "",
+  "sql_port": "3306",
+  "sql_database": "VzBot",
+  "sql_host": "localhost"
 
 }

@@ -12,9 +12,10 @@ class MessageSendEvent: ListenerAdapter() {
         val channel = event.channel
         val message = event.message
         if (VzBot.configFileManager.getChannels().contains(channel)) {
-            if (message.attachments.size == 0)
+            if (message.attachments.size == 0) {
                 message.delete().queue()
-
+                VzBot.channelLogger.sendMessage("Deleted message ${message.id} from ${channel.asMention} because it did not include a media.")
+            }
         }
 
     }

@@ -8,7 +8,6 @@ class ChannelLogger(channelID: String) {
     private var channel: TextChannel = VzBot.discord.getTextChannelById(channelID) ?: error("Channel for Logging was not found")
 
     fun sendMessage(message: String) {
-        println(message)
         channel.sendMessageEmbeds(defaultEmbed(message)).queue()
     }
 

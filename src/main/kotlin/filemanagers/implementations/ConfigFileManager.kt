@@ -49,4 +49,24 @@ class ConfigFileManager(val location: File): FileManager {
         return json.getString("logChannel")
     }
 
+    fun getSQLUser(): String {
+        return json.getString("sql_user")
+    }
+
+    fun getSQLPassword(): String {
+        return json.getString("sql_password")
+    }
+
+    fun getSQLPort(): Int {
+        return json.getInt("sql_port")
+    }
+
+    fun getSQLHost(): String {
+        return json.getString("sql_host")
+    }
+
+    fun getSQLDB(): String {
+        return json.getString("sql_database")
+    }
+
 }

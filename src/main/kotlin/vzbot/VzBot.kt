@@ -1,5 +1,6 @@
 package vzbot
 
+import db.DatabaseConnector
 import events.BotReadyEvent
 import events.MessageSendEvent
 import events.SlashCommandEvent
@@ -22,6 +23,8 @@ class VzBot(bootLocation: String) {
         configFileManager.loadFile()
         val token = configFileManager.getToken()
 
+        databaseConnector = DatabaseConnector()
+
         if (token.isEmpty())
             error("Token must be filled")
 
@@ -43,6 +46,7 @@ class VzBot(bootLocation: String) {
         lateinit var discord: Guild
         lateinit var configFileManager: ConfigFileManager
         lateinit var channelLogger: ChannelLogger
+        lateinit var databaseConnector: DatabaseConnector
     }
 
 
