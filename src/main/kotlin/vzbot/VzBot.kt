@@ -23,8 +23,8 @@ class VzBot(bootLocation: String) {
         configFileManager.loadFile()
         val token = configFileManager.getToken()
 
-        databaseConnector = DatabaseConnector()
 
+        databaseConnector = DatabaseConnector()
         if (token.isEmpty())
             error("Token must be filled")
 
