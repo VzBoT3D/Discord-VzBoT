@@ -3,6 +3,7 @@ package vzbot
 import command.CommandManager
 import command.implementations.AccelCommand
 import command.implementations.IOCommand
+import command.implementations.StepsCommand
 import daos.WarnDAO
 import db.DatabaseConnector
 import events.BotReadyEvent
@@ -44,6 +45,7 @@ class VzBot(bootLocation: String) {
 
         commandManager.addCommand(IOCommand())
         commandManager.addCommand(AccelCommand())
+        commandManager.addCommand(StepsCommand())
 
     }
 

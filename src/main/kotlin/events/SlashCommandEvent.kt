@@ -1,5 +1,6 @@
 package events
 
+import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -39,8 +40,6 @@ class SlashCommandEvent: ListenerAdapter() {
         cmd = sb.toString()
 
         VzBot.commandManager.handleInput(cmd, member=event.member?:error(""), event)
-
-
     }
 
 }

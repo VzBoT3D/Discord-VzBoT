@@ -19,8 +19,7 @@ class DatabaseConnector {
         dbConfig.password = VzBot.configFileManager.getSQLPassword()
 
         dbConfig.jdbcUrl = "jdbc:mysql://${VzBot.configFileManager.getSQLHost()}:${VzBot.configFileManager.getSQLPort()}/${VzBot.configFileManager.getSQLDB()}"
-        dbConfig.driverClassName = "org.mariadb.jdbc.Driver"
-
+        dbConfig.driverClassName = "com.mysql.cj.jdbc.Driver"
 
     }
 
@@ -31,6 +30,7 @@ class DatabaseConnector {
             dbConnector =  HikariDataSource(dbConfig)
             connection = dbConnector.connection
         } catch (e: Exception) {
+            e.printStackTrace()
             return false;
         }
         if (connection == null)

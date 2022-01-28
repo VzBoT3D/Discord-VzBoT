@@ -1,6 +1,7 @@
 package command.implementations
 
 import command.Command
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -9,11 +10,16 @@ import org.jfree.chart.ChartUtilities
 import org.jfree.chart.JFreeChart
 import org.jfree.chart.axis.NumberAxis
 import org.jfree.chart.plot.XYPlot
+import org.jfree.chart.renderer.xy.DeviationRenderer
+import org.jfree.chart.renderer.xy.XYAreaRenderer
+import org.jfree.chart.renderer.xy.XYDifferenceRenderer
 import org.jfree.chart.renderer.xy.XYSplineRenderer
 import org.jfree.data.xy.XYSeries
 import org.jfree.data.xy.XYSeriesCollection
+import java.awt.Color
 import java.io.File
 import kotlin.math.max
+import kotlin.math.round
 import kotlin.math.sqrt
 
 private val cmd = CommandData("accel", "will calculate a acceleration diagram and display it")
@@ -31,25 +37,22 @@ class AccelCommand: Command("accel", cmd, false) {
         val length = event.getOption("movement-length")!!.asDouble
         val accelSet = XYSeries("Acceleration")
         val speedSet = XYSeries("Speed")
-        val stepl = 1
+        val stepl = .5
         var time = 0.0;
 
-        var timeToFullSpeed = speed/acceleration
-        var distanceToFullSpeed = (acceleration*timeToFullSpeed*timeToFullSpeed)/2
+        val timeToFullSpeed = speed/acceleration
+        val distanceToFullSpeed = (acceleration*timeToFullSpeed*timeToFullSpeed)/2
 
 
         if (length/2 <= distanceToFullSpeed) {
             time = sqrt(length/acceleration)
             speed = acceleration*time
-            timeToFullSpeed = speed/acceleration
-            distanceToFullSpeed = (acceleration*timeToFullSpeed*timeToFullSpeed)/2
         }
 
-        var minDistance = length.toInt()
-        var maxDistance = length.toInt()
+        var minDistance = length
+        var maxDistance = length
 
-
-        for (i in 0 until (length / 2).toInt() step max(1, (length/800).toInt())) {
+        for (i in generateSequence(0.0) { it + stepl }.takeWhile { it <= length / 2}) {
             time = sqrt(2*i / acceleration)
             speed = time*acceleration
 
@@ -61,19 +64,19 @@ class AccelCommand: Command("accel", cmd, false) {
             accelSet.add(i, speed)
         }
 
-
-        for (i in (length/2).toInt() until length.toInt() step max(1, (length/800).toInt())) {
+        for (i in generateSequence(length/2) { it + stepl }.takeWhile { it <= length}) {
             val mirroredDistance = length - i
             time = sqrt(2* mirroredDistance/ acceleration)
             speed = time*acceleration
 
             if (speed >= givenSpeed) {
-                if (i < maxDistance) maxDistance = i
+                if (i < maxDistance) maxDistance = i.toDouble()
                 speedSet.add(i, givenSpeed)
             }
 
             accelSet.add(i, speed)
         }
+
 
         accelSet.add(length, 0)
 
@@ -88,7 +91,19 @@ class AccelCommand: Command("accel", cmd, false) {
         val temp = File("temp.jpg")
         ChartUtilities.saveChartAsPNG(temp, chart, 1920, 1080)
 
-        event.reply("Result:\nMax force ${acceleration/1000 * mass/1000}N\nAccel: $acceleration mm/s^2 \nDesired Speed: $givenSpeed\nDistance with full speed: ${(maxDistance-minDistance)*2}").addFile(temp).queue()
+        val embed = EmbedBuilder()
+        embed.setTitle("Results")
+        embed.setColor(Color.GREEN)
+
+        embed.addField("Maximum force", "${acceleration/1000 * mass/1000}N", true)
+        embed.addField("Acceleration", "${acceleration}mm/s²", true)
+        embed.addField("Desired speed", "${givenSpeed}mm/s", true)
+        embed.addField("Distance where speed is reached", "${round((maxDistance-minDistance)*2)}mm", true)
+        embed.addField("Movement length", "${length}mm", true)
+        embed.addField("Time to full speed", "${(timeToFullSpeed)}s", true)
+        embed.addField("Distance to full speed", "${round((distanceToFullSpeed))}mm", true)
+
+        event.replyEmbeds(embed.build()).addFile(temp).queue()
         temp.delete()
     }
 }

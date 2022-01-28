@@ -1,8 +1,11 @@
 package command
 
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import util.defaultEmbed
 import vzbot.VzBot
+import java.awt.Color
 
 class CommandManager() {
 
@@ -31,8 +34,15 @@ class CommandManager() {
         val name = input.split(" ")[0]
 
 
+
         for (command in commands) {
             if (command.name == name) {
+                if (command.admin) {
+                    if (!member.hasPermission(Permission.ADMINISTRATOR)) {
+                        event.replyEmbeds(defaultEmbed("Missing permission", Color.RED, "Error"))
+                        return
+                    }
+                }
                 VzBot.channelLogger.sendMessage("Command sent by user ${member.asMention} '$input'")
                 command.execute(member, event)
             }
