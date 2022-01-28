@@ -1,5 +1,9 @@
 package db
 
+import com.j256.ormlite.db.DatabaseType
+import com.j256.ormlite.jdbc.DataSourceConnectionSource
+import com.j256.ormlite.jdbc.db.MysqlDatabaseType
+import com.j256.ormlite.support.ConnectionSource
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import vzbot.VzBot
@@ -17,13 +21,14 @@ class DatabaseConnector {
         dbConfig.jdbcUrl = "jdbc:mysql://${VzBot.configFileManager.getSQLHost()}:${VzBot.configFileManager.getSQLPort()}/${VzBot.configFileManager.getSQLDB()}"
         dbConfig.driverClassName = "org.mariadb.jdbc.Driver"
 
+
     }
 
     fun connectTest(): Boolean {
-        dbConnector =  HikariDataSource(dbConfig)
 
-        var connection: Connection? = null
+        var connection: Connection?
         try {
+            dbConnector =  HikariDataSource(dbConfig)
             connection = dbConnector.connection
         } catch (e: Exception) {
             return false;
@@ -32,6 +37,10 @@ class DatabaseConnector {
             return false
         connection.close()
         return true
+    }
+
+    fun connectionSourced(): ConnectionSource {
+        return DataSourceConnectionSource(dbConnector, MysqlDatabaseType())
     }
 
 }

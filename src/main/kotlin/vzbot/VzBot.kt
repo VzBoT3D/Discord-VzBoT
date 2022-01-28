@@ -1,5 +1,8 @@
 package vzbot
 
+import command.CommandManager
+import command.implementations.IOCommand
+import daos.WarnDAO
 import db.DatabaseConnector
 import events.BotReadyEvent
 import events.MessageSendEvent
@@ -38,6 +41,8 @@ class VzBot(bootLocation: String) {
         jda.addEventListener(SlashCommandEvent())
         jda.addEventListener(MessageSendEvent())
 
+        commandManager.addCommand(IOCommand())
+
     }
 
 
@@ -47,6 +52,7 @@ class VzBot(bootLocation: String) {
         lateinit var configFileManager: ConfigFileManager
         lateinit var channelLogger: ChannelLogger
         lateinit var databaseConnector: DatabaseConnector
+        var commandManager = CommandManager()
     }
 
 

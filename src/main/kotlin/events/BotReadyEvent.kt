@@ -1,5 +1,7 @@
 package events
 
+import daos.RegistrationDAO
+import daos.WarnDAO
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import util.ChannelLogger
@@ -17,7 +19,18 @@ class BotReadyEvent: ListenerAdapter() {
         VzBot.discord = VzBot.jda.guilds[0]
 
         VzBot.channelLogger = ChannelLogger(VzBot.configFileManager.getLogChannelID())
-        VzBot.channelLogger.sendMessage("Bot started\nDatabase connection: $test")
+
+        if (!test) {
+            VzBot.channelLogger.sendError("Bot started\nDatabase connection: **$test**\nThere was an error while connecting to the database. The bot will not function")
+            return
+        }
+        VzBot.channelLogger.sendSuccess("Bot started\nDatabase connection: **$test**")
+        VzBot.commandManager.registerCommandsOnDiscord()
+
+
+        WarnDAO(VzBot.databaseConnector.connectionSourced()).initTable()
+        RegistrationDAO(VzBot.databaseConnector.connectionSourced()).initTable()
+
     }
 
 }

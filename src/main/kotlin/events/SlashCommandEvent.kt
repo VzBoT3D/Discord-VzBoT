@@ -3,6 +3,7 @@ package events
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.OptionType
+import vzbot.VzBot
 
 class SlashCommandEvent: ListenerAdapter() {
 
@@ -37,6 +38,7 @@ class SlashCommandEvent: ListenerAdapter() {
         sb.deleteCharAt(sb.length - 1)
         cmd = sb.toString()
 
+        VzBot.commandManager.handleInput(cmd, member=event.member?:error(""), event)
 
 
     }
