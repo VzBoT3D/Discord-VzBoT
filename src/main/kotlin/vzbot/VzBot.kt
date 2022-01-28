@@ -1,6 +1,7 @@
 package vzbot
 
 import command.CommandManager
+import command.implementations.AccelCommand
 import command.implementations.IOCommand
 import daos.WarnDAO
 import db.DatabaseConnector
@@ -42,6 +43,7 @@ class VzBot(bootLocation: String) {
         jda.addEventListener(MessageSendEvent())
 
         commandManager.addCommand(IOCommand())
+        commandManager.addCommand(AccelCommand())
 
     }
 
