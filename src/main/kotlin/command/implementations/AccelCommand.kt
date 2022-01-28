@@ -38,7 +38,8 @@ class AccelCommand: Command("accel", cmd, false) {
         val accelSet = XYSeries("Acceleration")
         val speedSet = XYSeries("Speed")
         val stepl = .5
-        var time = 0.0;
+        var time: Double
+        var maxTime = 0.0
 
         val timeToFullSpeed = speed/acceleration
         val distanceToFullSpeed = (acceleration*timeToFullSpeed*timeToFullSpeed)/2
@@ -61,6 +62,8 @@ class AccelCommand: Command("accel", cmd, false) {
                 speedSet.add(i, givenSpeed)
             }
 
+            maxTime = max(maxTime, time)
+
             accelSet.add(i, speed)
         }
 
@@ -73,6 +76,8 @@ class AccelCommand: Command("accel", cmd, false) {
                 if (i < maxDistance) maxDistance = i.toDouble()
                 speedSet.add(i, givenSpeed)
             }
+
+            maxTime = max(maxTime, time)
 
             accelSet.add(i, speed)
         }
@@ -88,7 +93,7 @@ class AccelCommand: Command("accel", cmd, false) {
         val plot = XYPlot(data, x, y, renderer)
         val chart = JFreeChart(plot)
 
-        val temp = File("temp.jpg")
+        val temp = File("temp.png")
         ChartUtilities.saveChartAsPNG(temp, chart, 1920, 1080)
 
         val embed = EmbedBuilder()
@@ -98,12 +103,15 @@ class AccelCommand: Command("accel", cmd, false) {
         embed.addField("Maximum force", "${acceleration/1000 * mass/1000}N", true)
         embed.addField("Acceleration", "${acceleration}mm/s²", true)
         embed.addField("Desired speed", "${givenSpeed}mm/s", true)
-        embed.addField("Distance where speed is reached", "${round((maxDistance-minDistance)*2)}mm", true)
+        embed.addField("Distance where speed is matched", "${round((maxDistance-minDistance)*2)}mm", true)
+        embed.addField("Amount of movement with desired speed covered", "${round(((maxDistance-minDistance)*2) / length * 100)}%", true)
         embed.addField("Movement length", "${length}mm", true)
+        val duration = timeToFullSpeed + (round((maxDistance-minDistance)*2)/givenSpeed) + timeToFullSpeed
+        embed.addField("Movement duration", "${round(duration * 1000) / 1000}s", true)
         embed.addField("Time to full speed", "${(timeToFullSpeed)}s", true)
-        embed.addField("Distance to full speed", "${round((distanceToFullSpeed))}mm", true)
-
-        event.replyEmbeds(embed.build()).addFile(temp).queue()
+        embed.addField("Distance to move until full speed", "${round((distanceToFullSpeed))}mm", true)
+        embed.setImage("attachment://temp.png")
+        event.replyEmbeds(embed.build()).addFile(temp, "temp.png").queue()
         temp.delete()
     }
 }
