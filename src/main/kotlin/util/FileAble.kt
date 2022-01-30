@@ -1,8 +1,13 @@
 package util
 
+import daos.DAO
+import org.simpleyaml.configuration.ConfigurationSection
+import org.simpleyaml.configuration.file.YamlFile
+
 interface FileAble {
 
-    fun fromYMLString(input: String): Boolean
-    fun toYMLString(): String
+    fun fromYML(input: ConfigurationSection): Boolean
+    fun toYML(yaml: YamlFile)
+    fun getDAO(): DAO<out FileAble>
 
 }

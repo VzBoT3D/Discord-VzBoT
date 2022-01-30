@@ -6,7 +6,7 @@ import com.j256.ormlite.support.ConnectionSource
 import com.j256.ormlite.table.TableUtils
 import systems.warnsystem.Warn
 
-class WarnDAO(var connection: ConnectionSource): DAO {
+class WarnDAO(var connection: ConnectionSource): DAO<Warn> {
 
     private val dao: Dao<Warn, String> = DaoManager.createDao(connection, Warn::class.java)
 
@@ -19,12 +19,8 @@ class WarnDAO(var connection: ConnectionSource): DAO {
         TableUtils.createTableIfNotExists(connection, Warn::class.java)
     }
 
-    fun createWarn(warn: Warn) {
-        dao.create(warn)
-    }
-
-    fun getWarn(id: String) {
-        dao.queryForId(id)
+    override fun create(obj: Warn) {
+        dao.create(obj)
     }
 
 }

@@ -8,8 +8,8 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.simpleyaml.configuration.file.YamlFile
+import util.FileAble
 import util.defaultEmbed
-import vzbot.VzBot
 import java.awt.Color
 import java.io.File
 
@@ -59,11 +59,21 @@ class IOCommand: Command("io", commandData, true) {
 
             val obj = clazz.constructors[0].newInstance()
 
+            if (obj::class.java.superclass != FileAble::class.java) {
+                event.replyEmbeds(defaultEmbed(".yml unsupported class", Color.RED))
+                return
+            }
+
+            if (obj !is FileAble) {
+                event.replyEmbeds(defaultEmbed(".yml unsupported class", Color.RED))
+                return
+            }
 
 
-
-
-
+            for (i in 0 until yml.getKeys(false).size) {
+                obj.fromYML(yml.getConfigurationSection("$i"))
+                obj.getDAO().create(obj)
+            }
 
 
         }
