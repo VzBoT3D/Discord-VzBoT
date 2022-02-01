@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.simpleyaml.configuration.file.YamlFile
+import systems.warnsystem.Registration
 import util.FileAble
 import util.defaultEmbed
 import java.awt.Color
@@ -70,12 +71,14 @@ class IOCommand: Command("io", commandData, true) {
             }
 
 
+
             for (i in 0 until yml.getKeys(false).size) {
-                obj.fromYML(yml.getConfigurationSection("$i"))
-                obj.getDAO().create(obj)
+
+                val fileAble = obj as FileAble
+
+                fileAble.fromYML(yml.getConfigurationSection("$i"))
+                fileAble.getDAO().create(fileAble)
             }
-
-
         }
     }
 }

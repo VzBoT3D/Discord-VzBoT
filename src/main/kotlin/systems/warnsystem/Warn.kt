@@ -2,6 +2,7 @@ package systems.warnsystem
 
 import com.j256.ormlite.field.DatabaseField
 import com.j256.ormlite.table.DatabaseTable
+import daos.DAO
 import org.simpleyaml.configuration.ConfigurationSection
 import org.simpleyaml.configuration.file.YamlFile
 import util.FileAble
@@ -23,5 +24,9 @@ class Warn(): FileAble {
     }
 
     override fun toYML(yml: YamlFile) {
+    }
+
+    override fun getDAO(): DAO<out FileAble> {
+        TODO("Not yet implemented")
     }
 }

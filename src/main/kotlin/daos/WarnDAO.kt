@@ -5,6 +5,7 @@ import com.j256.ormlite.dao.DaoManager
 import com.j256.ormlite.support.ConnectionSource
 import com.j256.ormlite.table.TableUtils
 import systems.warnsystem.Warn
+import util.FileAble
 
 class WarnDAO(var connection: ConnectionSource): DAO<Warn> {
 
@@ -20,7 +21,6 @@ class WarnDAO(var connection: ConnectionSource): DAO<Warn> {
     }
 
     override fun create(obj: Warn) {
-        dao.create(obj)
     }
 
 }

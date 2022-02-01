@@ -2,11 +2,10 @@ package daos
 
 import util.FileAble
 
-interface DAO<T> {
+interface DAO<T: FileAble> {
 
 
     fun initTable()
-    fun create(obj: FileAble)
-
+    fun create(obj: T)
 
 }
