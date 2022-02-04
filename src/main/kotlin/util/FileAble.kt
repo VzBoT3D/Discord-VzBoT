@@ -8,6 +8,6 @@ interface FileAble {
 
     fun fromYML(input: ConfigurationSection): Boolean
     fun toYML(yaml: YamlFile)
-    fun getDAO(): DAO<out FileAble>
+    fun getDAO(): DAO<FileAble>
 
 }

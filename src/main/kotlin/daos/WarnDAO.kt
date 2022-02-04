@@ -5,11 +5,10 @@ import com.j256.ormlite.dao.DaoManager
 import com.j256.ormlite.support.ConnectionSource
 import com.j256.ormlite.table.TableUtils
 import systems.warnsystem.Warn
-import util.FileAble
 
 class WarnDAO(var connection: ConnectionSource): DAO<Warn> {
 
-    private val dao: Dao<Warn, String> = DaoManager.createDao(connection, Warn::class.java)
+    private val dao: Dao<Warn, Long> = DaoManager.createDao(connection, Warn::class.java)
 
     fun getWarnsForMember(member: Long): List<Warn> {
         val queryBuilder = dao.queryBuilder()
@@ -21,6 +20,14 @@ class WarnDAO(var connection: ConnectionSource): DAO<Warn> {
     }
 
     override fun create(obj: Warn) {
+    }
+
+    override fun get(id: Long): Warn {
+        return dao.queryForId(id)
+    }
+
+    override fun listAll(): List<Warn> {
+        return dao.toList()
     }
 
 }

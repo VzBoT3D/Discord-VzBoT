@@ -1,5 +1,6 @@
 package systems.warnsystem
 
+import com.j256.ormlite.field.DataType
 import com.j256.ormlite.field.DatabaseField
 import com.j256.ormlite.table.DatabaseTable
 import daos.DAO
@@ -9,32 +10,70 @@ import org.simpleyaml.configuration.file.YamlFile
 import util.FileAble
 import vzbot.VzBot
 
+val registrationDAO = RegistrationDAO(VzBot.databaseConnector.connectionSourced())
+
 @DatabaseTable(tableName = "registrations")
 class Registration: FileAble {
 
     @DatabaseField(generatedId = true)
-    var id: Int = 0
+    var id: Long = 0
 
-    @DatabaseField()
+    @DatabaseField(dataType = DataType.LONG_STRING)
     var description: String = ""
 
-    @DatabaseField()
+    @DatabaseField(dataType = DataType.LONG_STRING)
     var mediaURL: String = ""
 
     @DatabaseField()
     var country: String = ""
 
+    @DatabaseField
+    var date: String = ""
+
     @DatabaseField()
     var memberID: Long = 0
 
     override fun fromYML(input: ConfigurationSection): Boolean {
+        if (!input.contains("id"))
+            return false;
+        id = input.getLong("id")
+
+        if (!input.contains("discordID"))
+            return false;
+        memberID = input.getLong("discordID")
+
+        if (!input.contains("description"))
+            return false;
+        description = input.getString("description")
+
+        if (input.contains("picURL")) {
+            mediaURL = input.getString("picURL")
+        }
+
+        if (!input.contains("country"))
+            return false;
+        country = input.getString("country")
+
+        if (!input.contains("date"))
+            return false;
+        date = input.getString("date")
         return true
     }
 
-    override fun toYML(yml: YamlFile) {
+    override fun toYML(yaml: YamlFile) {
+        yaml.set("$id.id", id)
+        yaml.set("$id.memberID", memberID)
+        yaml.set("$id.description", description)
+        yaml.set("$id.mediaURL", mediaURL)
+        yaml.set("$id.country", country)
+        yaml.set("$id.date", date)
     }
 
-    override fun getDAO(): DAO<Registration> {
-        return RegistrationDAO(VzBot.databaseConnector.connectionSourced())
+    fun getNextFreeID(): Long {
+        return registrationDAO.getNextFreeID()
+    }
+
+    override fun getDAO(): DAO<FileAble> {
+        return registrationDAO as DAO<FileAble>
     }
 }

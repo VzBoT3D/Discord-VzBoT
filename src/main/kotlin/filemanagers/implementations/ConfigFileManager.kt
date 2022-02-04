@@ -69,4 +69,8 @@ class ConfigFileManager(val location: File): FileManager {
         return json.getString("sql_database")
     }
 
+    fun getGitHubToken(): String {
+        return json.getString("gitHub")
+    }
+
 }

@@ -26,7 +26,7 @@ class Warn(): FileAble {
     override fun toYML(yml: YamlFile) {
     }
 
-    override fun getDAO(): DAO<out FileAble> {
+    override fun getDAO(): DAO<FileAble> {
         TODO("Not yet implemented")
     }
 }
