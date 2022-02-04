@@ -1,0 +1,4 @@
+package daos
+
+class DAOClassManager {
+}
