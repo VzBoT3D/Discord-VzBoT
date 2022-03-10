@@ -1,4 +1,0 @@
-package util
-
-class Point {
-}

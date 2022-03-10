@@ -1,7 +1,7 @@
 # Discord-VZBot
 Our discord VZBot managing the serial ids.
 
-This bots usage is mainly to manage our Discord vzbot.VzBot. 
+This bots usage is mainly to manage our Discord org.vzbot.discordbot.vzbot.VzBot. 
 Its built around having custom rules for channels and managing our Serial IDS we gave out for custom VZBots.
 
 In the future it will support a custom warn and punish system which is currently WIP.
