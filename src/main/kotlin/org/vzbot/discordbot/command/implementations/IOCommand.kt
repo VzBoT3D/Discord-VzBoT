@@ -1,16 +1,16 @@
 package org.vzbot.discordbot.command.implementations
 
-import org.vzbot.discordbot.LocationGetter
 import org.vzbot.discordbot.command.Command
+import org.vzbot.discordbot.daos.daoClassManager
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.simpleyaml.configuration.file.YamlFile
-import org.vzbot.discordbot.daos.daoClassManager
-import org.vzbot.discordbot.filemanagers.FileAble
-import org.vzbot.discordbot.defaultEmbed
+import org.vzbot.discordbot.LocationGetter
+import org.vzbot.discordbot.util.FileAble
+import org.vzbot.discordbot.util.defaultEmbed
 import java.awt.Color
 import java.io.File
 import kotlin.reflect.full.createInstance
@@ -19,8 +19,7 @@ import kotlin.reflect.full.createType
 private val importSubCommand = SubcommandData("import", "will import a file to a database table").addOption(OptionType.STRING, "file", "name of the file", true)
 private val exportSubCommand = SubcommandData("export", "will export a table into a file").addOption(OptionType.STRING, "table", "name of the table", true)
 private val commandData = CommandData("io", "Will execute operations on the given table or file.").addSubcommands(
-    importSubCommand, exportSubCommand
-)
+    importSubCommand, exportSubCommand)
 
 
 class IOCommand: Command("io", commandData, true) {

@@ -1,16 +1,15 @@
 package org.vzbot.discordbot.vzbot
 
 import org.vzbot.discordbot.command.CommandManager
-import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.JDABuilder
-import net.dv8tion.jda.api.entities.Guild
-import org.vzbot.discordbot.events.SlashCommandEvent
 import org.vzbot.discordbot.command.implementations.*
 import org.vzbot.discordbot.db.DatabaseConnector
 import org.vzbot.discordbot.events.BotReadyEvent
-import org.vzbot.discordbot.events.GCodeGeneratorButtonEvent
 import org.vzbot.discordbot.events.MessageSendEvent
+import org.vzbot.discordbot.events.SlashCommandEvent
 import org.vzbot.discordbot.filemanagers.implementations.ConfigFileManager
+import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.entities.Guild
 import org.vzbot.discordbot.util.ChannelLogger
 import java.io.File
 
@@ -40,15 +39,12 @@ class VzBot(bootLocation: String) {
         jda.addEventListener(BotReadyEvent())
         jda.addEventListener(SlashCommandEvent())
         jda.addEventListener(MessageSendEvent())
-        jda.addEventListener(GCodeGeneratorButtonEvent())
 
         commandManager.addCommand(IOCommand())
         commandManager.addCommand(AccelCommand())
         commandManager.addCommand(StepsCommand())
         commandManager.addCommand(RegisterSerialCommand())
         commandManager.addCommand(ViewBuildCommand())
-        commandManager.addCommand(Speedtest())
-
     }
 
 

@@ -4,8 +4,7 @@ import com.j256.ormlite.dao.Dao
 import com.j256.ormlite.dao.DaoManager
 import com.j256.ormlite.support.ConnectionSource
 import com.j256.ormlite.table.TableUtils
-import org.vzbot.discordbot.systems.Warn
-import org.vzbot.discordbot.util.DAO
+import org.vzbot.discordbot.warnsystem.Warn
 
 class WarnDAO(var connection: ConnectionSource): DAO<Warn> {
 

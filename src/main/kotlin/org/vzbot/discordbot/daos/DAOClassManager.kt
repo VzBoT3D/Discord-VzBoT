@@ -1,8 +1,8 @@
 package org.vzbot.discordbot.daos
 
-import org.vzbot.discordbot.filemanagers.FileAble
-import org.vzbot.discordbot.systems.Registration
-import org.vzbot.discordbot.systems.Warn
+import org.vzbot.discordbot.warnsystem.Registration
+import org.vzbot.discordbot.warnsystem.Warn
+import org.vzbot.discordbot.util.FileAble
 import kotlin.reflect.KClass
 
 val daoClassManager = DAOClassManager()

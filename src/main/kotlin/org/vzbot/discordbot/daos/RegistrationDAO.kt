@@ -4,8 +4,7 @@ import com.j256.ormlite.dao.Dao
 import com.j256.ormlite.jdbc.spring.DaoFactory
 import com.j256.ormlite.support.ConnectionSource
 import com.j256.ormlite.table.TableUtils
-import org.vzbot.discordbot.systems.Registration
-import org.vzbot.discordbot.util.DAO
+import org.vzbot.discordbot.warnsystem.Registration
 
 class RegistrationDAO(private val connectionSource: ConnectionSource): DAO<Registration> {
 

@@ -1,8 +1,8 @@
 package org.vzbot.discordbot.filemanagers.implementations
 
+import org.vzbot.discordbot.filemanagers.FileManager
 import net.dv8tion.jda.api.entities.TextChannel
 import org.json.JSONObject
-import org.vzbot.discordbot.filemanagers.FileManager
 import org.vzbot.discordbot.vzbot.VzBot
 import java.io.File
 import java.nio.file.Files

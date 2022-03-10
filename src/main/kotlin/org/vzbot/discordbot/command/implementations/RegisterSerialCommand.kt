@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import org.vzbot.discordbot.systems.Registration
+import org.vzbot.discordbot.warnsystem.Registration
 import org.vzbot.discordbot.vzbot.VzBot
 import java.awt.Color
 import java.text.SimpleDateFormat

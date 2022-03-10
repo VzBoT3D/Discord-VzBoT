@@ -3,7 +3,7 @@ package org.vzbot.discordbot.command
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
-import org.vzbot.discordbot.defaultEmbed
+import org.vzbot.discordbot.util.defaultEmbed
 import org.vzbot.discordbot.vzbot.VzBot
 import java.awt.Color
 

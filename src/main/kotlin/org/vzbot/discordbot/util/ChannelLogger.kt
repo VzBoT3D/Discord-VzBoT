@@ -2,7 +2,6 @@ package org.vzbot.discordbot.util
 
 import net.dv8tion.jda.api.entities.TextChannel
 import org.vzbot.discordbot.vzbot.VzBot
-import org.vzbot.discordbot.defaultEmbed
 import java.awt.Color
 
 class ChannelLogger(channelID: String) {
