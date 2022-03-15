@@ -45,10 +45,13 @@ class VzBot(bootLocation: String) {
         commandManager.addCommand(StepsCommand())
         commandManager.addCommand(RegisterSerialCommand())
         commandManager.addCommand(ViewBuildCommand())
+        commandManager.addCommand(CreateSubmissionCommand())
+
     }
 
 
     companion object {
+        lateinit var tronxyDiscord: Guild
         lateinit var jda: JDA
         lateinit var discord: Guild
         lateinit var configFileManager: ConfigFileManager

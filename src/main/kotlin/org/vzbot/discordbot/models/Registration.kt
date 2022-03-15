@@ -1,13 +1,13 @@
-package org.vzbot.discordbot.systems
+package org.vzbot.discordbot.models
 
 import com.j256.ormlite.field.DataType
 import com.j256.ormlite.field.DatabaseField
 import com.j256.ormlite.table.DatabaseTable
 import org.simpleyaml.configuration.ConfigurationSection
 import org.simpleyaml.configuration.file.YamlFile
+import org.vzbot.discordbot.daos.DAO
 import org.vzbot.discordbot.daos.RegistrationDAO
-import org.vzbot.discordbot.util.DAO
-import org.vzbot.discordbot.filemanagers.FileAble
+import org.vzbot.discordbot.util.FileAble
 import org.vzbot.discordbot.vzbot.VzBot
 
 val registrationDAO = RegistrationDAO(VzBot.databaseConnector.connectionSourced())

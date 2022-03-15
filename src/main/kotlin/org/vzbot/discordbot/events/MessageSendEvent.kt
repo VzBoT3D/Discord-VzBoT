@@ -1,7 +1,11 @@
 package org.vzbot.discordbot.events
 
+import net.dv8tion.jda.api.entities.ThreadChannel
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.vzbot.discordbot.daos.SubmissionDAO
+import org.vzbot.discordbot.models.Submission
+import org.vzbot.discordbot.models.submissionDAO
 import org.vzbot.discordbot.vzbot.VzBot
 
 class MessageSendEvent: ListenerAdapter() {
@@ -16,6 +20,13 @@ class MessageSendEvent: ListenerAdapter() {
                 message.delete().queue()
                 VzBot.channelLogger.sendMessage("Deleted message ${message.id} from ${channel.asMention} because it did not include a media.")
             }
+        }
+
+        if (channel is ThreadChannel) {
+            val id = channel.name
+
+            if (id.toLongOrNull() == null) return
+            var owner = submissionDAO.getSubmissionID(id.toLong())
         }
 
     }

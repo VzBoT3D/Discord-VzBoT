@@ -65,6 +65,14 @@ class ConfigFileManager(val location: File): FileManager {
         return json.getString("sql_host")
     }
 
+    fun getTronxySubmissionChannel(): String {
+        return json.getString("submissionChannelTronxy")
+    }
+
+    fun getVZSubmissionChannel(): String {
+        return json.getString("submissionChannelVZ")
+    }
+
     fun getSQLDB(): String {
         return json.getString("sql_database")
     }

@@ -16,7 +16,9 @@ class BotReadyEvent: ListenerAdapter() {
 
         val test = VzBot.databaseConnector.connectTest()
 
-        VzBot.discord = VzBot.jda.guilds[0]
+        VzBot.discord = event.jda.getGuildById("829828765512106054") ?: error("Bot is not on the VZ Discord")
+        VzBot.tronxyDiscord = event.jda.getGuildById("810876385848852510") ?: error("Bot is not on the VZ Discord")
+
 
         VzBot.channelLogger = ChannelLogger(VzBot.configFileManager.getLogChannelID())
 

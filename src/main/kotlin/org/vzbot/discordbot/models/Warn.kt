@@ -1,11 +1,11 @@
-package org.vzbot.discordbot.systems
+package org.vzbot.discordbot.models
 
 import com.j256.ormlite.field.DatabaseField
 import com.j256.ormlite.table.DatabaseTable
 import org.simpleyaml.configuration.ConfigurationSection
 import org.simpleyaml.configuration.file.YamlFile
-import org.vzbot.discordbot.util.DAO
-import org.vzbot.discordbot.filemanagers.FileAble
+import org.vzbot.discordbot.daos.DAO
+import org.vzbot.discordbot.util.FileAble
 
 @DatabaseTable(tableName = "warns")
 class Warn(): FileAble {

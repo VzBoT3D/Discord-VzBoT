@@ -8,6 +8,9 @@
   "sql_port": "3306",
   "sql_database": "VzBot",
   "sql_host": "localhost",
-  "gitHub": "token"
+  "gitHub": "token",
+
+  "submissionChannelVZ": "",
+  "submissionChannelTronxy": ""
 
 }
