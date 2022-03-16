@@ -24,6 +24,10 @@ class RegistrationDAO(private val connectionSource: ConnectionSource): DAO<Regis
         registrationDAO.create(obj)
     }
 
+    fun hasID(id: Long): Boolean {
+        return listAll().any {it.id == id}
+    }
+
     override fun get(id: Long): Registration {
         return registrationDAO.queryForId(id)
     }

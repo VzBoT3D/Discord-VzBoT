@@ -4,6 +4,7 @@ import org.vzbot.discordbot.daos.RegistrationDAO
 import org.vzbot.discordbot.daos.WarnDAO
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.vzbot.discordbot.daos.SubmissionDAO
 import org.vzbot.discordbot.util.ChannelLogger
 import org.vzbot.discordbot.vzbot.VzBot
 
@@ -32,6 +33,7 @@ class BotReadyEvent: ListenerAdapter() {
 
         WarnDAO(VzBot.databaseConnector.connectionSourced()).initTable()
         RegistrationDAO(VzBot.databaseConnector.connectionSourced()).initTable()
+        SubmissionDAO(VzBot.databaseConnector.connectionSourced()).initTable()
 
     }
 
