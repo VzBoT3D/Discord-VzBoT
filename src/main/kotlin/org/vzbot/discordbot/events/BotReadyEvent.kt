@@ -4,8 +4,11 @@ import org.vzbot.discordbot.daos.RegistrationDAO
 import org.vzbot.discordbot.daos.WarnDAO
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.vzbot.discordbot.daos.MessageDAO
 import org.vzbot.discordbot.daos.SubmissionDAO
+import org.vzbot.discordbot.models.messageDAO
 import org.vzbot.discordbot.util.ChannelLogger
+import org.vzbot.discordbot.vzbot.VERSION
 import org.vzbot.discordbot.vzbot.VzBot
 
 class BotReadyEvent: ListenerAdapter() {
@@ -24,7 +27,7 @@ class BotReadyEvent: ListenerAdapter() {
         VzBot.channelLogger = ChannelLogger(VzBot.configFileManager.getLogChannelID())
 
         if (!test) {
-            VzBot.channelLogger.sendError("Bot started\nDatabase connection: **$test**\nThere was an error while connecting to the database. The bot will not function")
+            VzBot.channelLogger.sendError("Bot started\nVersion: $VERSION\nDatabase connection: **$test**\nThere was an error while connecting to the database. The bot will not function")
             return
         }
         VzBot.channelLogger.sendSuccess("Bot started\nDatabase connection: **$test**")
@@ -34,7 +37,7 @@ class BotReadyEvent: ListenerAdapter() {
         WarnDAO(VzBot.databaseConnector.connectionSourced()).initTable()
         RegistrationDAO(VzBot.databaseConnector.connectionSourced()).initTable()
         SubmissionDAO(VzBot.databaseConnector.connectionSourced()).initTable()
-
+        MessageDAO(VzBot.databaseConnector.connectionSourced()).initTable()
     }
 
 }

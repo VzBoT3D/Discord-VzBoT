@@ -28,6 +28,10 @@ class SubmissionDAO(var connection: ConnectionSource): DAO<Submission>  {
         return listAll().any {it.memberID == member}
     }
 
+    fun hasSubmissionID(id: Long): Boolean {
+        return listAll().any {it.id == id}
+    }
+
     fun getSubmission(member: Long): Submission {
         return listAll().first {it.memberID == member}
     }

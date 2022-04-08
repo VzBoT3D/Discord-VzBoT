@@ -18,13 +18,14 @@ class CreateSubmissionCommand: Command("submit",dat , false) {
 
         if (submissionDAO.hasSubmission(member.idLong)) {
             val sub = submissionDAO.getSubmission(member.idLong)
-            event.replyEmbeds(defaultEmbed("You already have sent your submission. Discord ${sub.discordName}")).queue()
+            event.replyEmbeds(defaultEmbed("You already have sent your submission- ID: ${sub.id}")).queue()
             return
         }
 
-        val submissionChannelTronxy = (if (tronxy) event.guild!!.getTextChannelById(VzBot.configFileManager.getTronxySubmissionChannel()) else event.jda.getGuildById(810876385848852510)!!.getTextChannelById(VzBot.configFileManager.getTronxySubmissionChannel())) ?: error("Invalid submissionchannel in config given")
-        val submissionChannelVZ = (if (!tronxy) event.guild!!.getTextChannelById(VzBot.configFileManager.getVZSubmissionChannel()) else event.jda.getGuildById(810876385848852510)!!.getTextChannelById(VzBot.configFileManager.getVZSubmissionChannel())) ?: error("Invalid submissionchannel in config given")
+        val submissionChannelTronxy = event.jda.getGuildById(810876385848852510)!!.getTextChannelById(VzBot.configFileManager.getTronxySubmissionChannel()) ?: error("Invalid submissionchannel in config given")
+        val submissionChannelVZ = event.jda.getGuildById(829828765512106054)!!.getTextChannelById(VzBot.configFileManager.getVZSubmissionChannel()) ?: error("Invalid submissionchannel in config given")
         val submissionChannel = if (tronxy) submissionChannelTronxy else submissionChannelVZ
+        val oSubmissionChannel = if (!tronxy) submissionChannelTronxy else submissionChannelVZ
 
         if (event.channel.id != submissionChannel.id) {
             event.replyEmbeds(defaultEmbed("Please use the submission channel to create a new submission ${if (tronxy) submissionChannelTronxy.asMention else submissionChannelVZ.asMention}")).queue()
@@ -32,9 +33,16 @@ class CreateSubmissionCommand: Command("submit",dat , false) {
         }
 
 
-        val submissionID = submissionDAO.listAll() + 1
+        val submissionID = submissionDAO.listAll().size + 1
         submissionChannel.createThreadChannel("Submission $submissionID").queue()
-        //submissionDAO.create(Submission {id = submissionID})
+        oSubmissionChannel.createThreadChannel("Submission $submissionID").queue()
+
+        val submission = Submission()
+        submission.id = submissionID.toLong()
+        submission.memberID = member.idLong
+
+        submissionDAO.create(submission)
+
         event.reply("Done").complete().deleteOriginal().queue()
     }
 }

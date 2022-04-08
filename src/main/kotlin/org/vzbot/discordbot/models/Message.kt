@@ -5,33 +5,38 @@ import com.j256.ormlite.table.DatabaseTable
 import org.simpleyaml.configuration.ConfigurationSection
 import org.simpleyaml.configuration.file.YamlFile
 import org.vzbot.discordbot.daos.DAO
-import org.vzbot.discordbot.daos.SubmissionDAO
+import org.vzbot.discordbot.daos.MessageDAO
+import org.vzbot.discordbot.daos.RegistrationDAO
 import org.vzbot.discordbot.util.FileAble
 import org.vzbot.discordbot.vzbot.VzBot
 
-val submissionDAO = SubmissionDAO(VzBot.databaseConnector.connectionSourced())
-
-@DatabaseTable(tableName = "submissions")
-class Submission: FileAble {
+val messageDAO = MessageDAO(VzBot.databaseConnector.connectionSourced())
 
 
+@DatabaseTable(tableName = "messages")
+class Message: FileAble {
 
-    @DatabaseField(generatedId = true)
+    @DatabaseField(id = true)
     var id: Long = 0
 
-    @DatabaseField()
-    var memberID: Long = 0
+    @DatabaseField
+    var oID: Long = 0
+
+    @DatabaseField
+    var channel: Long = 0
+
+    @DatabaseField
+    var oChannel: Long = 0
 
     override fun fromYML(input: ConfigurationSection): Boolean {
-        //useless implementation
-       return true
+        TODO("Not yet implemented")
     }
 
     override fun toYML(yaml: YamlFile) {
-        //useless implementation
+        TODO("Not yet implemented")
     }
 
     override fun getDAO(): DAO<FileAble> {
-        return submissionDAO as DAO<FileAble>
+        TODO("Not yet implemented")
     }
 }

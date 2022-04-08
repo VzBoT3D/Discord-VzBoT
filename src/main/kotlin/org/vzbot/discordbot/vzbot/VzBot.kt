@@ -3,15 +3,17 @@ package org.vzbot.discordbot.vzbot
 import org.vzbot.discordbot.command.CommandManager
 import org.vzbot.discordbot.command.implementations.*
 import org.vzbot.discordbot.db.DatabaseConnector
-import org.vzbot.discordbot.events.BotReadyEvent
-import org.vzbot.discordbot.events.MessageSendEvent
-import org.vzbot.discordbot.events.SlashCommandEvent
 import org.vzbot.discordbot.filemanagers.implementations.ConfigFileManager
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Guild
+import org.vzbot.discordbot.events.*
+import org.vzbot.discordbot.models.messageDAO
 import org.vzbot.discordbot.util.ChannelLogger
 import java.io.File
+
+
+const val VERSION = "1.0.2"
 
 class VzBot(bootLocation: String) {
 
@@ -36,9 +38,12 @@ class VzBot(bootLocation: String) {
             error("Invalid token or connection")
         }
 
+
         jda.addEventListener(BotReadyEvent())
         jda.addEventListener(SlashCommandEvent())
         jda.addEventListener(MessageSendEvent())
+        jda.addEventListener(MessageDeleteEvent())
+        jda.addEventListener(GCodeGeneratorButtonEvent())
 
         commandManager.addCommand(IOCommand())
         commandManager.addCommand(AccelCommand())
@@ -46,7 +51,6 @@ class VzBot(bootLocation: String) {
         commandManager.addCommand(RegisterSerialCommand())
         commandManager.addCommand(ViewBuildCommand())
         commandManager.addCommand(CreateSubmissionCommand())
-
     }
 
 
