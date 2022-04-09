@@ -34,6 +34,7 @@ class MessageSendEvent: ListenerAdapter() {
         }
 
         if (channel is ThreadChannel) {
+            if (!channel.name.startsWith("submission ")) return
             val id = channel.name.substring(11)
 
             if (id.toLongOrNull() == null) return

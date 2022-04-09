@@ -81,4 +81,8 @@ class ConfigFileManager(val location: File): FileManager {
         return json.getString("gitHub")
     }
 
+    fun getSerialAnnouncementChannelID(): String {
+        return json.getString("serialAnnounceChannel")
+    }
+
 }

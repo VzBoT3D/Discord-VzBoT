@@ -6,9 +6,11 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import org.vzbot.discordbot.LocationGetter
 import org.vzbot.discordbot.warnsystem.Registration
 import org.vzbot.discordbot.vzbot.VzBot
 import java.awt.Color
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -64,7 +66,17 @@ class RegisterSerialCommand: Command("register", commandData, true) {
 
         serialHolder.modifyNickname("${serialHolder.effectiveName} VZ.${registration.id}").queue()
         VzBot.discord.addRoleToMember(serialHolder, VzBot.discord.getRoleById("891629031349420032")!!).queue()
+        val announceChannel = event.jda.getGuildById(829828765512106054)!!.getTextChannelById(VzBot.configFileManager.getSerialAnnouncementChannelID()) ?: error("Serial announcements channel was not found xD")
 
-        event.replyEmbeds(returnEmbed.build()).queue()
+
+        val fileToSend = File(LocationGetter().getLocation().absolutePath + "/VZBoT/plates/${registration.id}.stl")
+
+        val embed = EmbedBuilder()
+        embed.setTitle("Announcement")
+        embed.setDescription("${user.name} has just build VZ.${registration.id}\nSpread some VZLove")
+
+        announceChannel.sendMessageEmbeds(embed.build()).queue()
+        if (media.isNotEmpty()) announceChannel.sendMessage(media).queue()
+        event.replyEmbeds(returnEmbed.build()).addFile(fileToSend).queue()
     }
 }

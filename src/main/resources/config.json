@@ -11,6 +11,8 @@
   "gitHub": "token",
 
   "submissionChannelVZ": "",
-  "submissionChannelTronxy": ""
+  "submissionChannelTronxy": "",
+
+  "serialAnnounceChannel": ""
 
 }
