@@ -28,6 +28,10 @@ class RegistrationDAO(private val connectionSource: ConnectionSource): DAO<Regis
         return listAll().any {it.id == id}
     }
 
+    fun update(registration: Registration) {
+        registrationDAO.update(registration)
+    }
+
     override fun get(id: Long): Registration {
         return registrationDAO.queryForId(id)
     }

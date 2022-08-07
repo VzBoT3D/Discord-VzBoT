@@ -51,6 +51,9 @@ class VzBot(bootLocation: String) {
         commandManager.addCommand(RegisterSerialCommand())
         commandManager.addCommand(ViewBuildCommand())
         commandManager.addCommand(CreateSubmissionCommand())
+        commandManager.addCommand(Speedtest())
+        commandManager.addCommand(RegistrationEdit())
+
     }
 
 

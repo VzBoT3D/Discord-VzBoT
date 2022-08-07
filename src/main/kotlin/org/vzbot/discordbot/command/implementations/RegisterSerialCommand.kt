@@ -70,13 +70,15 @@ class RegisterSerialCommand: Command("register", commandData, true) {
 
 
         val fileToSend = File(LocationGetter().getLocation().absolutePath + "/VZBoT/plates/${registration.id}.stl")
-
+        val lowerPlate = if(registration.id < 100) File(LocationGetter().getLocation().absolutePath + "/VZBoT/serial_plate_bottom.stl") else File(LocationGetter().getLocation().absolutePath + "/VZBoT/Serial_plate_bottom-100-999.stl")
+        
         val embed = EmbedBuilder()
         embed.setTitle("Announcement")
-        embed.setDescription("${user.name} has just build VZ.${registration.id}\nSpread some VZLove")
+        embed.setDescription("${user.name} has just built VZ.${registration.id}\nSpread some VZLove")
+        if (media.isNotEmpty())
 
         announceChannel.sendMessageEmbeds(embed.build()).queue()
-        if (media.isNotEmpty()) announceChannel.sendMessage(media).queue()
-        event.replyEmbeds(returnEmbed.build()).addFile(fileToSend).queue()
+        announceChannel.sendMessage(media).queue()
+        event.replyEmbeds(returnEmbed.build()).addFile(fileToSend).addFile(lowerPlate).queue()
     }
 }

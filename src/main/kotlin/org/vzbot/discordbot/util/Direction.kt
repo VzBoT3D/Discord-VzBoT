@@ -17,7 +17,7 @@ enum class Direction(val unicode: String) {
         }
 
         override fun asGcode(to: Point, min: Point, max: Point, speed: Double): String {
-            return "G0 X${max.x}, Y${to.y} F${speed * 60}"
+            return "G0 X${max.x} Y${to.y} F${speed * 60}"
         }
     },
 
@@ -27,7 +27,7 @@ enum class Direction(val unicode: String) {
         }
 
         override fun asGcode(to: Point, min: Point, max: Point, speed: Double): String {
-            return "G0 X${min.x}, Y${to.y} F${speed * 60}"
+            return "G0 X${min.x} Y${to.y} F${speed * 60}"
         }
     },
 
@@ -37,7 +37,7 @@ enum class Direction(val unicode: String) {
         }
 
         override fun asGcode(to: Point, min: Point, max: Point, speed: Double): String {
-            return "G0 X${to.x}, Y${max.y} F${speed * 60}"
+            return "G0 X${to.x} Y${max.y} F${speed * 60}"
         }
     },
 
@@ -47,7 +47,7 @@ enum class Direction(val unicode: String) {
         }
 
         override fun asGcode(to: Point, min: Point, max: Point, speed: Double): String {
-            return "G0 X${to.x}, Y${min.y} F${speed * 60}"
+            return "G0 X${to.x} Y${min.y} F${speed * 60}"
         }
     },
 
@@ -57,7 +57,7 @@ enum class Direction(val unicode: String) {
         }
 
         override fun asGcode(to: Point, min: Point, max: Point, speed: Double): String {
-            return "G0 X${max.x}, Y${min.y} F${speed * 60}"
+            return "G0 X${max.x} Y${min.y} F${speed * 60}"
         }
     },
 
@@ -67,7 +67,7 @@ enum class Direction(val unicode: String) {
         }
 
         override fun asGcode(to: Point, min: Point, max: Point, speed: Double): String {
-            return "G0 X${max.x}, Y${max.y} F${speed * 60}"
+            return "G0 X${max.x} Y${max.y} F${speed * 60}"
         }
     },
 
@@ -77,7 +77,7 @@ enum class Direction(val unicode: String) {
         }
 
         override fun asGcode(to: Point, min: Point, max: Point, speed: Double): String {
-            return "G0 X${min.x}, Y${min.y} F${speed * 60}"
+            return "G0 X${min.x} Y${min.y} F${speed * 60}"
         }
     },
 
@@ -87,7 +87,7 @@ enum class Direction(val unicode: String) {
         }
 
         override fun asGcode(to: Point, min: Point, max: Point, speed: Double): String {
-            return "G0 X${min.x}, Y${max.y} F${speed * 60}"
+            return "G0 X${min.x} Y${max.y} F${speed * 60}"
         }
     };
 

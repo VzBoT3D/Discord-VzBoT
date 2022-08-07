@@ -15,6 +15,8 @@ import java.io.File
 import java.io.InputStream
 import java.util.logging.ConsoleHandler
 
+const val URL_REGEX = "[-a-zA-Z0-9@:%._\\\\+~#=]{1,256}\\\\.[a-zA-Z0-9()]{1,6}\\\\b([-a-zA-Z0-9()@:%_\\\\+.~#?&//=]*)"
+
 class MessageSendEvent: ListenerAdapter() {
 
 
@@ -27,14 +29,14 @@ class MessageSendEvent: ListenerAdapter() {
         if (member.user.isBot) return
 
         if (VzBot.configFileManager.getChannels().contains(channel)) {
-            if (message.attachments.size == 0) {
+            if (message.attachments.size == 0 && !message.contentRaw.matches(URL_REGEX.toRegex())) {
                 message.delete().queue()
                 VzBot.channelLogger.sendMessage("Deleted message ${message.id} from ${channel.asMention} because it did not include a media.")
             }
         }
 
         if (channel is ThreadChannel) {
-            if (!channel.name.startsWith("submission ")) return
+            if (!channel.name.startsWith("Submission ")) return
             val id = channel.name.substring(11)
 
             if (id.toLongOrNull() == null) return

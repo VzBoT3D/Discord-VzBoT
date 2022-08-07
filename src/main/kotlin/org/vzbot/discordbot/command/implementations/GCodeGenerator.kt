@@ -21,9 +21,9 @@ private val cmd = CommandData("gcodegenerator", "will create gcode you can use t
     .addOption(OptionType.NUMBER, "max_y", "the maximum the head should go to on y", true)
     .addOption(OptionType.NUMBER, "iterations", "who often should the movement repeat", true)
     .addOption(OptionType.NUMBER, "start_speed", "the speed the printhead will start at in mm/s", true)
-    .addOption(OptionType.NUMBER, "start_acceleration", "the acceleration the speed will start at in mm/s^2", true)
+    .addOption(OptionType.NUMBER, "start_acceleration", "the acceleration the speed will start at in mm/min^2", true)
     .addOption(OptionType.NUMBER, "speed_increase", "speed increase after an iteration in mm/s", true)
-    .addOption(OptionType.NUMBER, "acceleration_increase", "acceleration increase after an interation in mm/s^2", true)
+    .addOption(OptionType.NUMBER, "acceleration_increase", "acceleration increase after an interation in mm/min^2", true)
 
 data class GCodeGeneratorData(val startSpeed: Double, val startAcceleration: Double, val iterations: Int, val speedIncrease: Double, val accelerationIncrease: Double)
 class Speedtest: Command("gcodegenerator", cmd, false) {
