@@ -2,16 +2,15 @@ package org.vzbot.discordbot.command.implementations
 
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.vzbot.discordbot.command.Command
-import org.vzbot.discordbot.daos.RegistrationDAO
-import org.vzbot.discordbot.warnsystem.Registration
 import org.vzbot.discordbot.models.registrationDAO
+import org.vzbot.discordbot.warnsystem.Registration
 import kotlin.math.roundToLong
 
-private val cmdData = CommandData("registrationedit", "edit an ID")
+private val cmdData = Commands.slash("registrationedit", "edit an ID")
     .addOption(OptionType.NUMBER, "id", "id of the serial", true)
     .addOption(OptionType.STRING, "description", "new description of the id", false)
     .addOption(OptionType.STRING, "media", "new media of the id", false)
@@ -20,7 +19,7 @@ private val cmdData = CommandData("registrationedit", "edit an ID")
 
 class RegistrationEdit: Command("registrationedit", cmdData, false) {
 
-    override fun execute(member: Member, event: SlashCommandEvent) {
+    override fun execute(member: Member, event: SlashCommandInteractionEvent) {
         val idDouble = event.getOption("id")!!.asString.toDoubleOrNull() ?: return event.reply("Given ID is invalid").queue()
         val id = idDouble.roundToLong()
         if (!registrationDAO.hasID(id)) {

@@ -44,6 +44,7 @@ class VzBot(bootLocation: String) {
         jda.addEventListener(MessageSendEvent())
         jda.addEventListener(MessageDeleteEvent())
         jda.addEventListener(GCodeGeneratorButtonEvent())
+        jda.addEventListener(UserContextEvent())
 
         commandManager.addCommand(IOCommand())
         commandManager.addCommand(AccelCommand())
@@ -53,6 +54,7 @@ class VzBot(bootLocation: String) {
         commandManager.addCommand(CreateSubmissionCommand())
         commandManager.addCommand(Speedtest())
         commandManager.addCommand(RegistrationEdit())
+        commandManager.addContextCommand(SerialContextCommand())
 
     }
 

@@ -1,13 +1,13 @@
 package org.vzbot.discordbot.events
 
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import org.vzbot.discordbot.vzbot.VzBot
 
 class SlashCommandEvent: ListenerAdapter() {
 
-    override fun onSlashCommand(event: SlashCommandEvent) {
+    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
         if (event.guild == null)
             return
         if (event.member == null)

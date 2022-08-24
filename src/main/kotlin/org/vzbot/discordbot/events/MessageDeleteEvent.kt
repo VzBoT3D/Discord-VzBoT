@@ -3,6 +3,7 @@ package org.vzbot.discordbot.events
 import net.dv8tion.jda.api.entities.ThreadChannel
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.managers.channel.concrete.ThreadChannelManager
 import org.vzbot.discordbot.daos.MessageDAO
 import org.vzbot.discordbot.models.messageDAO
 import org.vzbot.discordbot.models.submissionDAO
@@ -12,10 +13,13 @@ class MessageDeleteEvent: ListenerAdapter() {
 
     override fun onMessageDelete(event: MessageDeleteEvent) {
 
-        val channel = event.channel
+        val uChannel = event.channel
         val msg = event.messageIdLong
 
-        if (channel is ThreadChannel) {
+        if (uChannel is ThreadChannel) {
+
+            val channel = uChannel as ThreadChannel
+
             val id = channel.name.substring(11)
             if (id.toLongOrNull() == null) return
 

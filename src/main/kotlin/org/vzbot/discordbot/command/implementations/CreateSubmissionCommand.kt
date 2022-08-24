@@ -1,22 +1,18 @@
 package org.vzbot.discordbot.command.implementations
 
-import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.IPermissionHolder
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.entities.PermissionOverride
-import net.dv8tion.jda.api.entities.templates.TemplateChannel
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.vzbot.discordbot.command.Command
 import org.vzbot.discordbot.models.Submission
 import org.vzbot.discordbot.models.submissionDAO
 import org.vzbot.discordbot.util.defaultEmbed
 import org.vzbot.discordbot.vzbot.VzBot
 
-private val dat = CommandData("submit", "Will create your own Thread to post your submission.")
+private val dat = Commands.slash("submit", "Will create your own Thread to post your submission.")
 class CreateSubmissionCommand: Command("submit",dat , false) {
 
-    override fun execute(member: Member, event: SlashCommandEvent) {
+    override fun execute(member: Member, event: SlashCommandInteractionEvent) {
 
         val tronxy = event.guild!!.id == "810876385848852510"
 

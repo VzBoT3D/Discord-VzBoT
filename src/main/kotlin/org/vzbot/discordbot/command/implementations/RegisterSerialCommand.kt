@@ -1,20 +1,20 @@
 package org.vzbot.discordbot.command.implementations
 
-import org.vzbot.discordbot.command.Command
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.vzbot.discordbot.LocationGetter
-import org.vzbot.discordbot.warnsystem.Registration
+import org.vzbot.discordbot.command.Command
 import org.vzbot.discordbot.vzbot.VzBot
+import org.vzbot.discordbot.warnsystem.Registration
 import java.awt.Color
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
-private val commandData = CommandData("register", "Will register a new Serial ID for the given user")
+private val commandData = Commands.slash("register", "Will register a new Serial ID for the given user")
     .addOption(OptionType.USER, "user", "user who belongs the serial id", true)
     .addOption(OptionType.STRING, "description", "Describe the build", true)
     .addOption(OptionType.STRING,"country", "Country where the machine is located", false)
@@ -22,7 +22,7 @@ private val commandData = CommandData("register", "Will register a new Serial ID
 
 class RegisterSerialCommand: Command("register", commandData, true) {
 
-    override fun execute(member: Member, event: SlashCommandEvent) {
+    override fun execute(member: Member, event: SlashCommandInteractionEvent) {
         val user = event.getOption("user")!!.asUser
         val description = event.getOption("description")!!.asString
         var country = "?"

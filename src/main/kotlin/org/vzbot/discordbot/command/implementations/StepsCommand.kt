@@ -3,9 +3,10 @@ package org.vzbot.discordbot.command.implementations
 import org.vzbot.discordbot.command.Command
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import java.awt.Color
 
@@ -18,10 +19,10 @@ private val screwSubCommand = SubcommandData("screw", "calculator for screws").a
     .addOption(OptionType.NUMBER, "microsteps", "microstepping of the stepper e.g. 1/16", true)
     .addOption(OptionType.NUMBER, "stepangle", "stepping angle of the motor in degree", true)
     .addOption(OptionType.NUMBER, "gearratio", "gear ratio of the to be driven axis", true)
-private val cmd = CommandData("steps", "will calculate steps/mm and rotation distance").addSubcommands(beltSubCommand, screwSubCommand)
+private val cmd = Commands.slash("steps", "will calculate steps/mm and rotation distance").addSubcommands(beltSubCommand, screwSubCommand)
 
 class StepsCommand: Command("steps", cmd, false) {
-    override fun execute(member: Member, event: SlashCommandEvent) {
+    override fun execute(member: Member, event: SlashCommandInteractionEvent) {
 
 
         if (event.subcommandName == "belt") {

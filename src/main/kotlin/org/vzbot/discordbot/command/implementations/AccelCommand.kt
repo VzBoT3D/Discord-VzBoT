@@ -1,11 +1,10 @@
 package org.vzbot.discordbot.command.implementations
 
-import org.vzbot.discordbot.command.Command
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.jfree.chart.ChartUtilities
 import org.jfree.chart.JFreeChart
 import org.jfree.chart.axis.NumberAxis
@@ -13,20 +12,21 @@ import org.jfree.chart.plot.XYPlot
 import org.jfree.chart.renderer.xy.XYSplineRenderer
 import org.jfree.data.xy.XYSeries
 import org.jfree.data.xy.XYSeriesCollection
+import org.vzbot.discordbot.command.Command
 import java.awt.Color
 import java.io.File
 import kotlin.math.max
 import kotlin.math.round
 import kotlin.math.sqrt
 
-private val cmd = CommandData("accel", "will calculate a acceleration diagram and display it")
+private val cmd = Commands.slash("accel", "will calculate a acceleration diagram and display it")
     .addOption(OptionType.NUMBER, "acceleration", "The acceleration of the movement in mm/s²", true)
     .addOption(OptionType.NUMBER, "desired-speed", "The speed it should reach in mm/s", true)
     .addOption(OptionType.NUMBER, "mass", "mass of the moving gantry im g", true)
     .addOption(OptionType.NUMBER, "movement-length", "The size of the movement in mm", true)
 
 class AccelCommand: Command("accel", cmd, false) {
-    override fun execute(member: Member, event: SlashCommandEvent) {
+    override fun execute(member: Member, event: SlashCommandInteractionEvent) {
         val acceleration = event.getOption("acceleration")!!.asDouble
         var speed = event.getOption("desired-speed")!!.asDouble
         val givenSpeed = speed

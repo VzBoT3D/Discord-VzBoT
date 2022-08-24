@@ -1,20 +1,20 @@
 package org.vzbot.discordbot.command.implementations
 
-import org.vzbot.discordbot.command.Command
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.Emoji
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.entities.emoji.Emoji
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import net.dv8tion.jda.api.interactions.components.Button
+import net.dv8tion.jda.api.interactions.commands.build.Commands
+import net.dv8tion.jda.api.interactions.components.buttons.Button
+import org.vzbot.discordbot.command.Command
 import org.vzbot.discordbot.util.Direction
 import org.vzbot.discordbot.util.Point
 import org.vzbot.discordbot.util.gCodeGeneratorManager
 import java.awt.Color
 import kotlin.math.roundToInt
 
-private val cmd = CommandData("gcodegenerator", "will create gcode you can use to test your 3d printer.")
+private val cmd = Commands.slash("gcodegenerator", "will create gcode you can use to test your 3d printer.")
     .addOption(OptionType.NUMBER,"minx", "the minimum the head should go to on x", true)
     .addOption(OptionType.NUMBER, "max_x", "the maximum the head should go to on x", true)
     .addOption(OptionType.NUMBER,"miny", "the minimum the head should go to on y", true)
@@ -28,7 +28,7 @@ private val cmd = CommandData("gcodegenerator", "will create gcode you can use t
 data class GCodeGeneratorData(val startSpeed: Double, val startAcceleration: Double, val iterations: Int, val speedIncrease: Double, val accelerationIncrease: Double)
 class Speedtest: Command("gcodegenerator", cmd, false) {
 
-    override fun execute(member: Member, event: SlashCommandEvent) {
+    override fun execute(member: Member, event: SlashCommandInteractionEvent) {
 
         val x = event.getOption("minx")!!.asDouble
         val y = event.getOption("miny")!!.asDouble
