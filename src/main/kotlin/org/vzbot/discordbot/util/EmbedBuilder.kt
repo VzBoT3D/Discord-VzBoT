@@ -20,7 +20,6 @@ fun defaultEmbed(message: String): MessageEmbed {
     embedBuilder.setDescription(message)
 
     return embedBuilder.build()
-
 }
 
 fun defaultEmbed(message: String, color: Color): MessageEmbed {

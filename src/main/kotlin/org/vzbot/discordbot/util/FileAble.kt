@@ -1,8 +1,8 @@
 package org.vzbot.discordbot.util
 
-import org.vzbot.discordbot.daos.DAO
 import org.simpleyaml.configuration.ConfigurationSection
 import org.simpleyaml.configuration.file.YamlFile
+import org.vzbot.discordbot.daos.DAO
 
 interface FileAble {
 

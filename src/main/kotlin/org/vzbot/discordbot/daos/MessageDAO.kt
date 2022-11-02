@@ -5,7 +5,6 @@ import com.j256.ormlite.jdbc.spring.DaoFactory
 import com.j256.ormlite.support.ConnectionSource
 import com.j256.ormlite.table.TableUtils
 import org.vzbot.discordbot.models.Message
-import org.vzbot.discordbot.warnsystem.Registration
 
 class MessageDAO(private val connectionSource: ConnectionSource): DAO<Message> {
 
