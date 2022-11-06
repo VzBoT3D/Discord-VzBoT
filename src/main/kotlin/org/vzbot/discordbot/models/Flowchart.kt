@@ -11,12 +11,19 @@ class Flowchart(private val startPoint: Datapoint) {
 
         val pointsToAdd = mutableListOf<Datapoint>()
         pointsToAdd += startPoint
+        var firstPoint = true
 
         while(pointsToAdd.isNotEmpty()) {
             for (currentPoint in pointsToAdd) {
+
+
                 pointsToAdd -= currentPoint
                 val prefix = "${currentPoint.title}."
                 yaml.set("$prefix.title", currentPoint.title)
+
+                if (firstPoint)
+                    yaml.set("$prefix.first", true)
+                firstPoint = false
 
                 for (meta in currentPoint.value) {
                     yaml.set("$prefix.meta.${meta.getTitle()}", meta.getMeta())

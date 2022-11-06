@@ -7,7 +7,7 @@ import org.vzbot.discordbot.vzbot.VzBot
 import java.io.File
 import java.nio.file.Files
 
-class ConfigFileManager(val location: File): FileManager {
+class ConfigFileManager(private val location: File): FileManager {
 
     private lateinit var json: JSONObject
 
@@ -22,7 +22,6 @@ class ConfigFileManager(val location: File): FileManager {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-
         }
 
         val lines = Files.readString(location.toPath())
