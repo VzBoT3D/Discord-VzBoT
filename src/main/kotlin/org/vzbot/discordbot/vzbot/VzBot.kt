@@ -7,13 +7,13 @@ import org.vzbot.discordbot.filemanagers.implementations.ConfigFileManager
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.requests.GatewayIntent
 import org.vzbot.discordbot.events.*
-import org.vzbot.discordbot.models.messageDAO
 import org.vzbot.discordbot.util.ChannelLogger
 import java.io.File
 
 
-const val VERSION = "1.0.2"
+const val VERSION = "1.0.3"
 
 class VzBot(bootLocation: String) {
 
@@ -33,7 +33,7 @@ class VzBot(bootLocation: String) {
             error("Token must be filled")
 
         try {
-            jda = JDABuilder.createDefault(token).build()
+            jda = JDABuilder.createDefault(token).enableIntents(GatewayIntent.MESSAGE_CONTENT).build()
         }catch (e: Exception) {
             error("Invalid token or connection")
         }
@@ -45,6 +45,7 @@ class VzBot(bootLocation: String) {
         jda.addEventListener(MessageDeleteEvent())
         jda.addEventListener(GCodeGeneratorButtonEvent())
         jda.addEventListener(UserContextEvent())
+        jda.addEventListener(STLConfigEvents())
 
         commandManager.addCommand(IOCommand())
         commandManager.addCommand(AccelCommand())
@@ -55,7 +56,7 @@ class VzBot(bootLocation: String) {
         commandManager.addCommand(Speedtest())
         commandManager.addCommand(RegistrationEdit())
         commandManager.addContextCommand(SerialContextCommand())
-
+        commandManager.addCommand(STLConfigurationCommand())
     }
 
 

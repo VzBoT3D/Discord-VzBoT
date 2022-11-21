@@ -45,7 +45,5 @@ class ViewBuildCommand: Command("viewbuild", cmdData, false) {
         embed.addField("Media", reg.mediaURL,true)
 
         event.replyEmbeds(embed.build()).queue()
-
     }
-
 }

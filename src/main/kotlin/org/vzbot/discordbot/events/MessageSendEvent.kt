@@ -23,6 +23,8 @@ class MessageSendEvent: ListenerAdapter() {
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
 
+        if (event.channel !is TextChannel) return
+
         val uChannel = event.channel as TextChannel
         val message = event.message
         val member = event.member ?: return

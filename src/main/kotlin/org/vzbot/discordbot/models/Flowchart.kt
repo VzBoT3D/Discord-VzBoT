@@ -2,22 +2,43 @@ package org.vzbot.discordbot.models
 
 import org.simpleyaml.configuration.file.YamlFile
 
-class Flowchart(private val startPoint: Datapoint) {
+class Flowchart(val startPoint: Datapoint) {
 
-    private fun asYML(): YamlFile {
-        val yaml = YamlFile()
+    fun getAllPoints(): MutableList<Datapoint> {
+        val points = mutableListOf<Datapoint>()
 
-        val index = 0
+        val pointsToIterate = mutableListOf<Datapoint>().apply { add(startPoint) }
 
+        while (pointsToIterate.isNotEmpty()) {
+            val list = mutableListOf<Datapoint>().apply { addAll(pointsToIterate) }
+
+            for (point in list) {
+                pointsToIterate.remove(point)
+                points.add(point)
+
+                pointsToIterate.addAll(point.nextPoints)
+            }
+        }
+        return points
+    }
+
+    fun getPoint(title: String): Datapoint {
+        return getAllPoints().first { it.title == title }
+    }
+
+    fun hasPoint(title: String) = getAllPoints().any {it.title == title}
+
+    fun asYML(yaml: YamlFile): YamlFile {
         val pointsToAdd = mutableListOf<Datapoint>()
         pointsToAdd += startPoint
         var firstPoint = true
 
         while(pointsToAdd.isNotEmpty()) {
-            for (currentPoint in pointsToAdd) {
+            val list = mutableListOf<Datapoint>()
+            list.addAll(pointsToAdd)
 
+            for (currentPoint in list) {
 
-                pointsToAdd -= currentPoint
                 val prefix = "${currentPoint.title}."
                 yaml.set("$prefix.title", currentPoint.title)
 
@@ -29,10 +50,17 @@ class Flowchart(private val startPoint: Datapoint) {
                     yaml.set("$prefix.meta.${meta.getTitle()}", meta.getMeta())
                 }
 
+                val pointList = mutableListOf<String>()
+
                 for (point in currentPoint.nextPoints) {
-                    yaml.set("$prefix.point.${point.title}", point.title)
+                    pointList.add(point.title)
                     pointsToAdd.add(point)
                 }
+
+                yaml.set("$prefix.point", pointList)
+
+
+                pointsToAdd -= currentPoint
             }
         }
 
@@ -40,7 +68,7 @@ class Flowchart(private val startPoint: Datapoint) {
     }
 }
 
-class Datapoint(val title: String, val value: List<SavedMedia>) {
+class Datapoint(var title: String, val value: MutableList<SavedMedia<out Any>>) {
 
     var previousPoint: Datapoint? = null
     var nextPoints: List<Datapoint> = listOf()
