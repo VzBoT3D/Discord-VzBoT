@@ -140,7 +140,6 @@ class GCodeGeneratorButtonEvent: ListenerAdapter() {
         val message = event.channel.retrieveMessageById(gCodeGeneratorManager.getInteractionID(clicker)).complete()
         val validDirections = availableDirections(current, gCodeGeneratorManager.machineMin(clicker), gCodeGeneratorManager.machineMax(clicker))
 
-
         event.editMessageEmbeds(embed.build()).setActionRows( listOf(ActionRow.of(validDirections.map { d -> Button.secondary(d.name, Emoji.fromUnicode(d.unicode))}), ActionRow.of(Button.primary("submit", "Submit"),Button.danger("delete", "Delete last movement"), Button.danger("cancel", "Cancel")) )).queue()
     }
 

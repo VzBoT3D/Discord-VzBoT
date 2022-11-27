@@ -16,10 +16,7 @@ import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
 import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.vzbot.discordbot.LocationGetter
-import org.vzbot.discordbot.models.Datapoint
-import org.vzbot.discordbot.models.Flowchart
-import org.vzbot.discordbot.models.STLMedia
-import org.vzbot.discordbot.models.StringMedia
+import org.vzbot.discordbot.models.*
 import org.vzbot.discordbot.util.STLFinderManager
 import org.vzbot.discordbot.util.defaultEmbed
 import java.awt.Color
@@ -45,102 +42,61 @@ class STLConfigEvents: ListenerAdapter() {
         }
 
         if (buttonID == "c_new_chart") {
-            val name = TextInput.create("title", "Name", TextInputStyle.SHORT).build()
-            val modal = Modal.create("c_create_chart+${event.message.id}", "Create a new chart")
-            modal.addActionRows(ActionRow.of(name))
-
-            return event.replyModal(modal.build()).queue()
+            return event.replyModal(Menu.newChartModal()).queue()
         }
 
         if (buttonID == "c_create_point") {
-            val name = TextInput.create("title", "Name", TextInputStyle.SHORT).build()
-            val modal = Modal.create("c_create_point+${event.message.id}", "Create a new point")
-            modal.addActionRows(ActionRow.of(name))
-
-            return event.replyModal(modal.build()).queue()
+            return event.replyModal(Menu.newPointModal()).queue()
         }
 
         if (buttonID == "c_change_name") {
-            val name = TextInput.create("title", "Name", TextInputStyle.SHORT).build()
-            val modal = Modal.create("c_change_point+${event.message.id}", "Enter the new name of this point")
-            modal.addActionRows(ActionRow.of(name))
-            return event.replyModal(modal.build()).queue()
+            return event.replyModal(Menu.changePointNameModal()).queue()
         }
 
         if (buttonID == "c_edit_meta") {
             val msg = STLFinderManager.getMessageFromID(event.messageId)
-
-            msg.editMessageComponents(
-                ActionRow.of(Button.primary("c_create_meta", "Create new meta component"), Button.primary("c_edit_meta_dir", "Edit a certain meta"), Button.danger("c_delete_meta", "Delete meta component")),
-                ActionRow.of(Button.danger("c_cancel_meta", "Cancel"))).queue()
-            msg.editMessageEmbeds(defaultEmbed("Select from the options below how you want to change this point", Color.GREEN, "Meta editor")).queue()
+            Menu.editMetaMenu(msg)
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
 
         if (buttonID == "c_create_meta") {
-            val name = TextInput.create("title", "Name", TextInputStyle.SHORT).build()
-            val url = TextInput.create("url", "URL", TextInputStyle.PARAGRAPH).setPlaceholder("Link to where this meta is directing to").build()
-            val modal = Modal.create("c_create_meta+${event.message.id}", "Create a new meta value")
-            modal.addActionRows(ActionRow.of(name), ActionRow.of(url))
-            return event.replyModal(modal.build()).queue()
+            return event.replyModal(Menu.createMetaModal()).queue()
         }
 
         if (buttonID == "c_edit_meta_dir") {
-            val menu = SelectMenu.create("select_meta")
             val point = STLFinderManager.getCurrentPoint(clicker)
 
             if (point.value.isEmpty()) {
                 return event.reply("This point does not have any metavalues yet").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
             }
 
-            for (meta in point.value) {
-                menu.addOption(meta.getTitle(), meta.getTitle())
-            }
-
             val msg = event.message
-
-            msg.editMessageEmbeds(defaultEmbed("Select the Meta from the list below you would like to edit")).queue()
-            msg.editMessageComponents(ActionRow.of(menu.build()), ActionRow.of(Button.danger("c_cancel_meta_edit", "Cancel"))).queue()
+            Menu.editMetaSelectionMenu(point, msg)
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
 
         if (buttonID == "c_cancel_meta_edit") {
             val msg = STLFinderManager.getMessageFromID(event.messageId)
-
-            msg.editMessageComponents(
-                ActionRow.of(Button.primary("c_create_meta", "Create new meta component"), Button.primary("c_edit_meta_dir", "Edit a certain meta"), Button.danger("c_delete_meta", "Delete meta component")),
-                ActionRow.of(Button.danger("c_cancel_meta", "Cancel"))).queue()
-            msg.editMessageEmbeds(defaultEmbed("Select from the options below how you want to change this point", Color.GREEN, "Meta editor")).queue()
+            Menu.createMetaMenu(msg)
 
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
 
         if (buttonID == "c_delete_meta") {
-            val menu = SelectMenu.create("delete_meta")
             val point = STLFinderManager.getCurrentPoint(clicker)
 
             if (point.value.isEmpty()) {
                 return event.reply("This point does not have any metavalues yet").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
             }
 
-            for (meta in point.value) {
-                menu.addOption(meta.getTitle(), meta.getTitle())
-            }
+            Menu.deleteMetaSelectionMenu(point, event.message)
 
-            val msg = event.message
-
-            msg.editMessageEmbeds(defaultEmbed("Select the Meta from the list below you would like to delete.")).queue()
-            msg.editMessageComponents(ActionRow.of(menu.build()), ActionRow.of(Button.danger("c_cancel_meta_edit", "Cancel"))).queue()
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
 
         if (buttonID == "c_meta_done") {
             val msg = STLFinderManager.getMessageFromID(event.messageId)
-
-            msg.editMessageComponents(
-                ActionRow.of(Button.primary("c_create_meta", "Create new meta component"), Button.primary("c_edit_meta_dir", "Edit a certain meta"), Button.danger("c_delete_meta", "Delete meta component")),
-                ActionRow.of(Button.danger("c_cancel_meta", "Cancel"))).queue()
-            msg.editMessageEmbeds(defaultEmbed("Select from the options below how you want to change this point", Color.GREEN, "Meta editor")).queue()
+            Menu.createMetaMenu(msg)
 
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
@@ -188,7 +144,7 @@ class STLConfigEvents: ListenerAdapter() {
         if (event.member == null) return
 
         if (modalID.startsWith("c_create_chart")) {
-            val messageID = modalID.split("+")[1]
+            val messageID = modalID.split("+")
             val title = event.getValue("title")!!.asString
 
             val startingPoint = Datapoint(title, mutableListOf())
@@ -198,7 +154,7 @@ class STLConfigEvents: ListenerAdapter() {
             STLFinderManager.addChartToMember(event.member!!, chart)
 
             val embed = configEmbed(startingPoint)
-            val msg = STLFinderManager.getMessageFromID(messageID)
+            val msg = STLFinderManager.getMessageConfiguring(event.member!!)
 
             msg.editMessageEmbeds(embed).queue()
             msg.editMessageComponents(
@@ -210,7 +166,6 @@ class STLConfigEvents: ListenerAdapter() {
         }
 
         if (modalID.startsWith("c_create_point")) {
-            val messageID = modalID.split("+")[1]
             val title = event.getValue("title")!!.asString
 
             val point = Datapoint(title, mutableListOf())
@@ -222,7 +177,7 @@ class STLConfigEvents: ListenerAdapter() {
             STLFinderManager.setCurrentPoint(event.member!!, point)
 
             val embed = configEmbed(point)
-            val msg = STLFinderManager.getMessageFromID(messageID)
+            val msg = STLFinderManager.getMessageConfiguring(event.member!!)
 
             val menu = SelectMenu.create("select_point")
             for (differentPoint in chart.getAllPoints()) {
@@ -240,7 +195,6 @@ class STLConfigEvents: ListenerAdapter() {
         }
 
         if (modalID.startsWith("c_change_point")) {
-            val messageID = modalID.split("+")[1]
             val title = event.getValue("title")!!.asString
 
             val chart = STLFinderManager.getChartFromMember(event.member!!)
@@ -251,7 +205,7 @@ class STLConfigEvents: ListenerAdapter() {
             point.title = title
 
             val embed = configEmbed(point)
-            val msg = STLFinderManager.getMessageFromID(messageID)
+            val msg = STLFinderManager.getMessageConfiguring(event.member!!)
 
             val menu = SelectMenu.create("select_point")
 
@@ -280,7 +234,6 @@ class STLConfigEvents: ListenerAdapter() {
         }
 
         if (modalID.startsWith("c_create_meta")) {
-            val messageID = modalID.split("+")[1]
             val title = event.getValue("title")!!.asString
             val url = event.getValue("url")!!.asString
 
@@ -292,7 +245,7 @@ class STLConfigEvents: ListenerAdapter() {
 
             point.value += StringMedia(title, url)
 
-            val msg = STLFinderManager.getMessageFromID(messageID)
+            val msg = STLFinderManager.getMessageConfiguring(event.member!!)
             STLFinderManager.addUploading(event.member!!, msg.channel as TextChannel)
 
             msg.editMessageEmbeds(defaultEmbed("If you want to attach media to this meta, just upload it into this channel. Otherwise press the done button.")).queue()
@@ -379,7 +332,6 @@ class STLConfigEvents: ListenerAdapter() {
     }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
-
         if (event.member == null) return
         if (event.member!!.user.isBot) return
 
