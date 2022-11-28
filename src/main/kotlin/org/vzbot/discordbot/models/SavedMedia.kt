@@ -8,6 +8,8 @@ interface SavedMedia<Media> {
     fun getTitle(): String
     fun getMeta(): Media
 
+    fun getMetaRaw(): String
+
 }
 
 class StringMedia(private val header: String, private val metaValue: String): SavedMedia<String> {
@@ -21,16 +23,38 @@ class StringMedia(private val header: String, private val metaValue: String): Sa
         return metaValue
     }
 
+    override fun getMetaRaw(): String {
+        return metaValue
+    }
+
 }
 
-class STLMedia(val location: File): SavedMedia<File> {
+class STLMedia(private val location: File): SavedMedia<File> {
 
     override fun getMeta(): File {
         return location
     }
 
     override fun getTitle(): String {
-       return location.name
+       return location.name.replace(".","")
+    }
+
+    override fun getMetaRaw(): String {
+        return location.absolutePath
+    }
+}
+
+class ChartMedia(private val flowchart: Flowchart): SavedMedia<Flowchart> {
+    override fun getTitle(): String {
+        return flowchart.startPoint.title
+    }
+
+    override fun getMeta(): Flowchart {
+        return flowchart
+    }
+
+    override fun getMetaRaw(): String {
+        return flowchart.startPoint.title
     }
 
 }

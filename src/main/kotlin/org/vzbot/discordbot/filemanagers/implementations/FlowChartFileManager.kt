@@ -14,17 +14,10 @@ class FlowChartFileManager(private val location: File): FileManager {
     override fun loadFile() {
         if (!location.exists()) {
             location.parentFile.mkdirs()
-
-            try {
-                val inputStream = javaClass.classLoader.getResourceAsStream("config.json") ?: error("config.json could not be loaded")
-                Files.copy(inputStream, location.toPath())
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            location.createNewFile()
         }
 
-        val lines = Files.readString(location.toPath())
-        yamlFile.load(lines)
+        yamlFile.load(location)
     }
 
     override fun saveFile() {
@@ -45,10 +38,21 @@ class FlowChartFileManager(private val location: File): FileManager {
 
         for (key in yamlFile.getKeys(false)) {
             if (isFirst(key)) {
-
+                flowCharts += getFlowchart(key) ?: continue
             }
         }
         return flowCharts
+    }
+
+    fun deleteChart(title: String) {
+
+        val chart = getFlowchart(title)
+
+        for (point in chart!!.getAllPoints()) {
+            yamlFile.set(point.title, null)
+        }
+
+        saveFile()
     }
 
 
@@ -87,15 +91,22 @@ class FlowChartFileManager(private val location: File): FileManager {
             for (metaKeys in yamlFile.getConfigurationSection("${point.title}.meta").getKeys(false)) {
                 val value = yamlFile.getString("${point.title}.meta.$metaKeys")
 
-                if (value.endsWith(".stl")) {
-                    point.value += STLMedia(File(value))
-                } else {
+                try {
+                    val file = File(value)
+
+                    if (file.exists()) {
+                        point.value += STLMedia(File(value))
+                    } else if (hasFlowChart(value)) {
+                        point.value += ChartMedia(getFlowchart(value)!!)
+                    } else {
+                        point.value += StringMedia(metaKeys, value)
+                    }
+                } catch (e: Exception) {
                     point.value += StringMedia(metaKeys, value)
                 }
             }
         }
     }
-
 
 
     fun hasFlowChart(chart: String): Boolean {

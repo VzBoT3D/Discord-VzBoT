@@ -16,9 +16,11 @@ import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
 import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.vzbot.discordbot.LocationGetter
+import org.vzbot.discordbot.filemanagers.implementations.FlowChartFileManager
 import org.vzbot.discordbot.models.*
 import org.vzbot.discordbot.util.STLFinderManager
 import org.vzbot.discordbot.util.defaultEmbed
+import org.vzbot.discordbot.vzbot.VzBot
 import java.awt.Color
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -31,6 +33,8 @@ class STLConfigEvents: ListenerAdapter() {
         val buttonID = event.componentId
         val clicker = event.member ?: return
 
+        if (event.channel !is TextChannel) return
+
         if (!buttonID.startsWith("c")) return
         if (!STLFinderManager.isConfiguring(clicker, event.message)) return event.replyEmbeds(defaultEmbed("Error", Color.RED, "This is not your stl configurator")).queue()
 
@@ -41,8 +45,59 @@ class STLConfigEvents: ListenerAdapter() {
             return event.message.delete().queue()
         }
 
+        if (buttonID == "c_cancel_chart") {
+            STLFinderManager.resetChart(clicker)
+            Menu.chartMenu(event.message)
+            return event.reply("").queue { it.deleteOriginal().queue() }
+        }
+
         if (buttonID == "c_new_chart") {
             return event.replyModal(Menu.newChartModal()).queue()
+        }
+
+        if (buttonID == "c_edit_chart") {
+            if (VzBot.flowChartFileManager.getFlowCharts().isEmpty()) {
+                return event.reply("There are no flowcharts yet").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
+            }
+
+            Menu.editChartMenu(event.message)
+            return event.reply("").queue { it.deleteOriginal().queue() }
+        }
+
+        if (buttonID == "c_cancel_edit_chart") {
+            Menu.chartMenu(STLFinderManager.getMessageConfiguring(event.member!!))
+            return event.reply("").queue { it.deleteOriginal().queue() }
+        }
+
+        if (buttonID == "c_view_charts") {
+            if (VzBot.flowChartFileManager.getFlowCharts().isEmpty()) {
+                return event.reply("There are no flowcharts yet").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
+            }
+
+            Menu.viewChartsMenu(event.message)
+            return event.reply("").queue { it.deleteOriginal().queue() }
+        }
+
+        if (buttonID == "c_delete_chart") {
+
+            if (VzBot.flowChartFileManager.getFlowCharts().isEmpty()) {
+                return event.reply("There are no flowcharts yet").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
+            }
+
+            Menu.deleteChartsMenu(event.message)
+            return event.reply("").queue { it.deleteOriginal().queue() }
+        }
+
+        if (buttonID == "c_chart_done") {
+            val chart = STLFinderManager.getChartFromMember(event.member!!)
+            chart.asYML(VzBot.flowChartFileManager.getYaml())
+
+            VzBot.flowChartFileManager.saveFile()
+
+            Menu.chartMenu(STLFinderManager.getMessageConfiguring(event.member!!))
+            STLFinderManager.resetChart(event.member!!)
+
+            return event.reply("Your chart has been saved.").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
         }
 
         if (buttonID == "c_create_point") {
@@ -55,7 +110,7 @@ class STLConfigEvents: ListenerAdapter() {
 
         if (buttonID == "c_edit_meta") {
             val msg = STLFinderManager.getMessageFromID(event.messageId)
-            Menu.editMetaMenu(msg)
+            Menu.metaConfiguratorMenu(msg)
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
 
@@ -76,8 +131,22 @@ class STLConfigEvents: ListenerAdapter() {
         }
 
         if (buttonID == "c_cancel_meta_edit") {
-            val msg = STLFinderManager.getMessageFromID(event.messageId)
-            Menu.createMetaMenu(msg)
+            Menu.metaConfiguratorMenu(event.message)
+
+            return event.reply("").queue { it.deleteOriginal().queue() }
+        }
+
+        if (buttonID == "c_upload_meta") {
+            Menu.metaFileUploadMenu(event.message)
+
+            STLFinderManager.addUploading(event.member!!, event.channel as TextChannel)
+
+            return event.reply("").queue { it.deleteOriginal().queue() }
+        }
+
+        if (buttonID == "c_meta_add_chart") {
+            val chart = STLFinderManager.getChartFromMember(clicker)
+            Menu.linkChartMenu(event.message, chart)
 
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
@@ -96,45 +165,22 @@ class STLConfigEvents: ListenerAdapter() {
 
         if (buttonID == "c_meta_done") {
             val msg = STLFinderManager.getMessageFromID(event.messageId)
-            Menu.createMetaMenu(msg)
+            Menu.metaConfiguratorMenu(msg)
 
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
 
         if (buttonID == "c_cancel_meta") {
-            val point = STLFinderManager.getCurrentPoint(event.member!!)
-            val embed = configEmbed(point)
-            val msg = STLFinderManager.getMessageFromID(event.messageId)
+
+            val currentPoint = STLFinderManager.getCurrentPoint(event.member!!)
+            val msg = STLFinderManager.getMessageConfiguring(event.member!!)
             val chart = STLFinderManager.getChartFromMember(event.member!!)
 
-            val menu = SelectMenu.create("select_point")
-
-            if (chart.getAllPoints().size > 1) {
-                for (differentPoint in chart.getAllPoints()) {
-                    menu.addOption(differentPoint.title, differentPoint.title)
-                }
-            }
-
-            msg.editMessageEmbeds(embed).queue()
-
-            if (chart.getAllPoints().size > 1) {
-                msg.editMessageComponents(
-                    ActionRow.of(Button.primary("c_create_point", "Create a new point")),
-                    ActionRow.of(menu.build())
-                    ,ActionRow.of(Button.primary("c_edit_meta", "Edit the Meta values"), Button.primary("c_change_name", "Change point name"))
-                    ,ActionRow.of(Button.danger("c_cancel", "Cancel"))).queue()
-            } else {
-                msg.editMessageComponents(
-                    ActionRow.of(Button.primary("c_create_point", "Create a new point"))
-                    ,ActionRow.of(Button.primary("c_edit_meta", "Edit the Meta values"), Button.primary("c_change_name", "Change point name"))
-                    ,ActionRow.of(Button.danger("c_cancel", "Cancel"))).queue()
-            }
-
+            Menu.pointMenu(currentPoint, msg, chart)
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
 
         event.reply("There was an error while processing your request. Please report this to devin.").queue()
-
     }
 
     override fun onModalInteraction(event: ModalInteractionEvent) {
@@ -144,24 +190,18 @@ class STLConfigEvents: ListenerAdapter() {
         if (event.member == null) return
 
         if (modalID.startsWith("c_create_chart")) {
-            val messageID = modalID.split("+")
             val title = event.getValue("title")!!.asString
 
-            val startingPoint = Datapoint(title, mutableListOf())
+            if (VzBot.flowChartFileManager.hasFlowChart(title)) return event.reply("There is already a chart with this name").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
 
+            val startingPoint = Datapoint(title, mutableListOf())
             val chart = Flowchart(startingPoint)
 
             STLFinderManager.addChartToMember(event.member!!, chart)
 
-            val embed = configEmbed(startingPoint)
             val msg = STLFinderManager.getMessageConfiguring(event.member!!)
 
-            msg.editMessageEmbeds(embed).queue()
-            msg.editMessageComponents(
-                ActionRow.of(Button.primary("c_create_point", "Create a new point"))
-                ,ActionRow.of(Button.primary("c_edit_meta", "Edit the Meta values"), Button.primary("c_change_name", "Change point name"))
-                ,ActionRow.of(Button.danger("c_cancel", "Cancel"))).queue()
-
+            Menu.pointMenu(startingPoint, msg, chart)
             event.reply("").queue { it.deleteOriginal().queue() }
         }
 
@@ -176,27 +216,15 @@ class STLConfigEvents: ListenerAdapter() {
             STLFinderManager.getCurrentPoint(event.member!!).nextPoints += point
             STLFinderManager.setCurrentPoint(event.member!!, point)
 
-            val embed = configEmbed(point)
             val msg = STLFinderManager.getMessageConfiguring(event.member!!)
 
-            val menu = SelectMenu.create("select_point")
-            for (differentPoint in chart.getAllPoints()) {
-                menu.addOption(differentPoint.title, differentPoint.title)
-            }
-
-            msg.editMessageEmbeds(embed).queue()
-            msg.editMessageComponents(
-                ActionRow.of(Button.primary("c_create_point", "Create a new point")),
-                ActionRow.of(menu.build())
-                ,ActionRow.of(Button.primary("c_edit_meta", "Edit the Meta values"), Button.primary("c_change_name", "Change point name"))
-                ,ActionRow.of(Button.danger("c_cancel", "Cancel"))).queue()
+            Menu.pointMenu(point, msg, chart)
 
             event.reply("").queue { it.deleteOriginal().queue() }
         }
 
         if (modalID.startsWith("c_change_point")) {
             val title = event.getValue("title")!!.asString
-
             val chart = STLFinderManager.getChartFromMember(event.member!!)
 
             if (chart.hasPoint(title)) return event.reply("There is already a point with the given name!").queue {it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS)}
@@ -204,31 +232,9 @@ class STLConfigEvents: ListenerAdapter() {
             val point = STLFinderManager.getCurrentPoint(event.member!!)
             point.title = title
 
-            val embed = configEmbed(point)
             val msg = STLFinderManager.getMessageConfiguring(event.member!!)
 
-            val menu = SelectMenu.create("select_point")
-
-            if (chart.getAllPoints().size > 1) {
-                for (differentPoint in chart.getAllPoints()) {
-                    menu.addOption(differentPoint.title, differentPoint.title)
-                }
-            }
-
-            msg.editMessageEmbeds(embed).queue()
-
-            if (chart.getAllPoints().size > 1) {
-                msg.editMessageComponents(
-                    ActionRow.of(Button.primary("c_create_point", "Create a new point")),
-                    ActionRow.of(menu.build())
-                    ,ActionRow.of(Button.primary("c_edit_meta", "Edit the Meta values"), Button.primary("c_change_name", "Change point name"))
-                    ,ActionRow.of(Button.danger("c_cancel", "Cancel"))).queue()
-            } else {
-                msg.editMessageComponents(
-                    ActionRow.of(Button.primary("c_create_point", "Create a new point"))
-                    ,ActionRow.of(Button.primary("c_edit_meta", "Edit the Meta values"), Button.primary("c_change_name", "Change point name"))
-                    ,ActionRow.of(Button.danger("c_cancel", "Cancel"))).queue()
-            }
+            Menu.pointMenu(point, msg, chart)
 
             event.reply("").queue { it.deleteOriginal().queue() }
         }
@@ -243,13 +249,11 @@ class STLConfigEvents: ListenerAdapter() {
                 return event.reply("There is already a meta with this title existing").queue()
             }
 
-            point.value += StringMedia(title, url)
+            point.value += StringMedia(title.replace(".", ""), url)
 
             val msg = STLFinderManager.getMessageConfiguring(event.member!!)
-            STLFinderManager.addUploading(event.member!!, msg.channel as TextChannel)
+            Menu.metaConfiguratorMenu(msg)
 
-            msg.editMessageEmbeds(defaultEmbed("If you want to attach media to this meta, just upload it into this channel. Otherwise press the done button.")).queue()
-            msg.editMessageComponents(ActionRow.of(Button.primary("c_meta_done", "Done"), Button.danger("c_cancel", "Cancel"))).queue()
             event.reply("").queue { it.deleteOriginal().queue() }
         }
     }
@@ -262,7 +266,6 @@ class STLConfigEvents: ListenerAdapter() {
 
         if (menuID == "select_point") {
             val selectedPoint = event.selectedOptions[0].value
-
             val chart = STLFinderManager.getChartFromMember(member)
 
             if (!chart.hasPoint(selectedPoint)) {
@@ -272,20 +275,9 @@ class STLConfigEvents: ListenerAdapter() {
             val point = chart.getPoint(selectedPoint)
             STLFinderManager.setCurrentPoint(event.member!!, point)
 
-            val embed = configEmbed(point)
             val msg = STLFinderManager.getMessageFromID(event.messageId)
 
-            val menu = SelectMenu.create("select_point")
-            for (differentPoint in chart.getAllPoints()) {
-                menu.addOption(differentPoint.title, differentPoint.title)
-            }
-
-            msg.editMessageEmbeds(embed).queue()
-            msg.editMessageComponents(
-                ActionRow.of(Button.primary("c_create_point", "Create a new point")),
-                ActionRow.of(menu.build())
-                ,ActionRow.of(Button.primary("c_edit_meta", "Edit the Meta values"), Button.primary("c_change_name", "Change point name"))
-                ,ActionRow.of(Button.danger("c_cancel", "Cancel"))).queue()
+            Menu.pointMenu(point, msg, chart)
             event.reply("").queue { it.deleteOriginal().queue() }
         }
 
@@ -301,11 +293,8 @@ class STLConfigEvents: ListenerAdapter() {
             val point = STLFinderManager.getCurrentPoint(member)
             point.value.removeIf { it.getTitle() ==  selectedMeta}
 
-            val name = TextInput.create("title", "Name", TextInputStyle.SHORT).build()
-            val url = TextInput.create("url", "URL", TextInputStyle.PARAGRAPH).setPlaceholder("Link to where this meta is directing to").build()
-            val modal = Modal.create("c_create_meta+${event.message.id}", "Create a new meta value")
-            modal.addActionRows(ActionRow.of(name), ActionRow.of(url))
-            return event.replyModal(modal.build()).queue()
+            val modal = Menu.createMetaModal()
+            return event.replyModal(modal).queue()
         }
 
         if (menuID == "delete_meta") {
@@ -318,14 +307,69 @@ class STLConfigEvents: ListenerAdapter() {
             }
 
             val point = STLFinderManager.getCurrentPoint(member)
-            point.value.removeIf { it.getTitle() ==  selectedMeta}
+
+            val meta = point.value.first { it.getTitle() ==  selectedMeta }
+
+            if (meta is STLMedia) {
+                meta.getMeta().delete()
+            }
+            point.value -= meta
 
             val msg = STLFinderManager.getMessageConfiguring(member)
 
-            msg.editMessageComponents(
-                ActionRow.of(Button.primary("c_create_meta", "Create new meta component"), Button.primary("c_edit_meta_dir", "Edit a certain meta"), Button.danger("c_delete_meta", "Delete meta component")),
-                ActionRow.of(Button.danger("c_cancel_meta", "Cancel"))).queue()
-            msg.editMessageEmbeds(defaultEmbed("Select from the options below how you want to change this point", Color.GREEN, "Meta editor")).queue()
+            Menu.metaConfiguratorMenu(msg)
+
+            return event.reply("").queue { it.deleteOriginal().queue() }
+        }
+
+        if (menuID == "chart_edit_menu") {
+            val selectedChart = event.selectedOptions[0].value
+
+            if (!VzBot.flowChartFileManager.hasFlowChart(selectedChart)) {
+                event.reply("There was an error while selecting your chart").queue {it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS)}
+                return
+            }
+
+
+            val chart = VzBot.flowChartFileManager.getFlowCharts().first { it.startPoint.title == selectedChart }
+
+            STLFinderManager.addChartToMember(member, chart)
+
+            Menu.pointMenu(chart.startPoint, event.message, chart)
+            return event.reply("").queue { it.deleteOriginal().queue() }
+        }
+
+        if (menuID == "chart_delete_menu") {
+            val selectedChart = event.selectedOptions[0].value
+
+            if (!VzBot.flowChartFileManager.hasFlowChart(selectedChart)) {
+                event.reply("There was an error while deleting your chart").queue {it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS)}
+                return
+            }
+
+            VzBot.flowChartFileManager.deleteChart(selectedChart)
+            Menu.chartMenu(event.message)
+            return event.reply("The chart has been deleted").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
+        }
+
+        if (menuID == "select_link_chart") {
+            val selectedChart = event.selectedOptions[0].value
+
+            if (!VzBot.flowChartFileManager.hasFlowChart(selectedChart)) {
+                event.reply("There was an error while deleting your chart").queue {it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS)}
+                return
+            }
+
+            val chart = VzBot.flowChartFileManager.getFlowchart(selectedChart)!!
+            val point = STLFinderManager.getCurrentPoint(member)
+
+            if (point.value.any {it.getTitle() == selectedChart}) {
+                event.reply("This chart has already been added to this point").queue {it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS)}
+                return
+            }
+
+            point.value += ChartMedia(chart)
+            Menu.metaConfiguratorMenu(event.message)
 
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
@@ -342,30 +386,20 @@ class STLConfigEvents: ListenerAdapter() {
         if (STLFinderManager.getUploadChannel(member) != event.channel) return
         if (message.attachments.size == 0) return
 
+        val chart = STLFinderManager.getChartFromMember(member)
         val point = STLFinderManager.getCurrentPoint(member)
 
         for (attachment in message.attachments) {
-            attachment.proxy.downloadToFile(File(LocationGetter().getLocation().absolutePath + "/${attachment.fileName}")).whenComplete{ file, _ -> run {
+            val dir = File(LocationGetter().getLocation().absolutePath + "/VZBot/charts/data/${chart.startPoint.title}/${point.title}/${attachment.fileName}")
+            dir.parentFile.mkdirs()
+            attachment.proxy.downloadToFile(dir).whenComplete{ file, _ -> run {
                 if (point.value.any {it.getTitle() == file.name}) {
                     return@run event.message.addReaction(Emoji.fromFormatted("❌")).queue()
                 }
 
                 point.value += STLMedia(file)
-                event.message.addReaction(Emoji.fromFormatted("✅")).queue()
+                event.message.addReaction(Emoji.fromFormatted("✅")).queue { event.message.delete().queueAfter(10, TimeUnit.SECONDS) }
             } }
         }
-    }
-
-    private fun configEmbed(currentPoint: Datapoint): MessageEmbed {
-
-        val embed = EmbedBuilder()
-        embed.setTitle("Configurator")
-
-        embed.addField("Current Point", currentPoint.title, false)
-        embed.addField("Meta", currentPoint.value.joinToString { it.getTitle() }, false)
-
-        embed.setColor(Color.GREEN)
-
-        return embed.build()
     }
 }

@@ -37,18 +37,6 @@ object STLFinderManager {
         uploadMap[member] = textChannel
     }
 
-    fun addUploadedFile(member: Member, file: File) {
-        if (!fileMap.contains(member)) {
-            fileMap[member] = mutableListOf(file)
-        } else {
-            fileMap[member]!!.add(file)
-        }
-    }
-
-    fun getUploadedFiles(member: Member): MutableList<File> {
-        return fileMap[member]!!
-    }
-
     fun removeUploadedFiles(member: Member) = fileMap.remove(member)
 
     fun removeUploading(member: Member) = uploadMap.remove(member)
@@ -59,6 +47,13 @@ object STLFinderManager {
         removeUploading(member)
         removeChartFromMember(member)
         removeConfiguring(member)
+        removeCurrentPoint(member)
+        removeUploadedFiles(member)
+    }
+
+    fun resetChart(member: Member) {
+        removeUploading(member)
+        removeChartFromMember(member)
         removeCurrentPoint(member)
         removeUploadedFiles(member)
     }

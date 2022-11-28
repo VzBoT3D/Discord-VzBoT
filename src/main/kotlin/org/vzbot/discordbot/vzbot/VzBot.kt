@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.requests.GatewayIntent
 import org.vzbot.discordbot.events.*
+import org.vzbot.discordbot.filemanagers.implementations.FlowChartFileManager
 import org.vzbot.discordbot.util.ChannelLogger
 import java.io.File
 
@@ -25,6 +26,10 @@ class VzBot(bootLocation: String) {
         println("Booting up org.vzbot.discordbot.vzbot.VzBot-Controller")
         configFileManager = ConfigFileManager(File("$bootLocation/VZBoT", "config.json"))
         configFileManager.loadFile()
+
+        flowChartFileManager = FlowChartFileManager(File("$bootLocation/VZBoT/charts/charts.yml"))
+        flowChartFileManager.loadFile()
+
         val token = configFileManager.getToken()
 
 
@@ -67,6 +72,7 @@ class VzBot(bootLocation: String) {
         lateinit var configFileManager: ConfigFileManager
         lateinit var channelLogger: ChannelLogger
         lateinit var databaseConnector: DatabaseConnector
+        lateinit var flowChartFileManager: FlowChartFileManager
         var commandManager = CommandManager()
     }
 

@@ -47,7 +47,7 @@ class Flowchart(val startPoint: Datapoint) {
                 firstPoint = false
 
                 for (meta in currentPoint.value) {
-                    yaml.set("$prefix.meta.${meta.getTitle()}", meta.getMeta())
+                    yaml.set("$prefix.meta.${meta.getTitle()}", meta.getMetaRaw())
                 }
 
                 val pointList = mutableListOf<String>()
