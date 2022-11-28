@@ -121,7 +121,7 @@ class STLConfigEvents: ListenerAdapter() {
         if (buttonID == "c_edit_meta_dir") {
             val point = STLFinderManager.getCurrentPoint(clicker)
 
-            if (point.value.isEmpty()) {
+            if (point.value.none { it !is STLMedia }) {
                 return event.reply("This point does not have any metavalues yet").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
             }
 
@@ -146,6 +146,11 @@ class STLConfigEvents: ListenerAdapter() {
 
         if (buttonID == "c_meta_add_chart") {
             val chart = STLFinderManager.getChartFromMember(clicker)
+
+            if (VzBot.flowChartFileManager.getFlowCharts().filter { it.startPoint.title != chart.startPoint.title }.isEmpty()) {
+                return event.reply("There are no flowcharts yet").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
+            }
+
             Menu.linkChartMenu(event.message, chart)
 
             return event.reply("").queue { it.deleteOriginal().queue() }
@@ -245,9 +250,12 @@ class STLConfigEvents: ListenerAdapter() {
 
             val point = STLFinderManager.getCurrentPoint(event.member!!)
 
+            point.value.removeIf { it.getTitle() ==  title}
+
             if (point.value.any {it.getTitle() == title}) {
                 return event.reply("There is already a meta with this title existing").queue()
             }
+
 
             point.value += StringMedia(title.replace(".", ""), url)
 
@@ -289,9 +297,6 @@ class STLConfigEvents: ListenerAdapter() {
             if (!chart.getAllPoints().any { it.value.any { value -> value.getTitle() == selectedMeta } }) {
                 return event.reply("An error occurred while trying to navigate to your given meta").queue()
             }
-
-            val point = STLFinderManager.getCurrentPoint(member)
-            point.value.removeIf { it.getTitle() ==  selectedMeta}
 
             val modal = Menu.createMetaModal()
             return event.replyModal(modal).queue()

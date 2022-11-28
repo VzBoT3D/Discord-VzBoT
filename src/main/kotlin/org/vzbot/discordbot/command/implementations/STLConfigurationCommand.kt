@@ -11,7 +11,7 @@ import java.awt.Color
 
 private val cmdData = Commands.slash("stlconfig", "Starts the process of the stl picker configuration")
 
-class STLConfigurationCommand: Command("stlconfig", cmdData , true) {
+class STLConfigurationCommand: Command("stlconfig", cmdData , false) {
 
     override fun execute(member: Member, event: SlashCommandInteractionEvent) {
 

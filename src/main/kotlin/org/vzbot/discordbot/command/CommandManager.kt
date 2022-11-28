@@ -60,7 +60,7 @@ class CommandManager() {
             if (command.name == name) {
                 if (command.admin) {
                     if (!member.hasPermission(Permission.ADMINISTRATOR)) {
-                        event.replyEmbeds(defaultEmbed("Missing permission", Color.RED, "Error"))
+                        event.replyEmbeds(defaultEmbed("Missing permission", Color.RED, "Error")).queue()
                         return
                     }
                 }

@@ -80,7 +80,7 @@ object Menu {
     fun metaConfiguratorMenu(msg: Message) {
         msg.editMessageComponents(
             ActionRow.of(Button.primary("c_create_meta", "Create new meta component"), Button.primary("c_meta_add_chart", "Link a different chart to this point"), Button.primary("c_upload_meta", "Upload files to this point"), Button.primary("c_edit_meta_dir", "Edit a certain meta"), Button.danger("c_delete_meta", "Delete meta component")),
-            ActionRow.of(Button.danger("c_cancel_meta", "Cancel"))).queue()
+            ActionRow.of(Button.danger("c_cancel_meta", "Back"))).queue()
         msg.editMessageEmbeds(defaultEmbed("Select from the options below how you want to change this point", Color.GREEN, "Meta editor")).queue()
     }
 
