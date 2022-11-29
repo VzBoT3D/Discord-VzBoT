@@ -51,6 +51,7 @@ class VzBot(bootLocation: String) {
         jda.addEventListener(GCodeGeneratorButtonEvent())
         jda.addEventListener(UserContextEvent())
         jda.addEventListener(STLConfigEvents())
+        jda.addEventListener(STLFinderEvents())
 
         commandManager.addCommand(IOCommand())
         commandManager.addCommand(AccelCommand())
@@ -62,6 +63,7 @@ class VzBot(bootLocation: String) {
         commandManager.addCommand(RegistrationEdit())
         commandManager.addContextCommand(SerialContextCommand())
         commandManager.addCommand(STLConfigurationCommand())
+        commandManager.addCommand(STLFinderCommand())
     }
 
 

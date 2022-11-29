@@ -55,3 +55,20 @@ fun defaultEmbed(message: String, color: Color, title: String): MessageEmbed {
     return embedBuilder.build()
 
 }
+
+fun defaultEmbed(message: String, color: Color, title: String, author: String): MessageEmbed {
+
+    val embedBuilder = EmbedBuilder()
+
+    val timeIntDay = SimpleDateFormat("dd/MM/yyyy HH:mm:ss z").format(Date(System.currentTimeMillis()))
+
+    embedBuilder.setAuthor(author)
+    embedBuilder.setTitle(title)
+    embedBuilder.setFooter(timeIntDay)
+    embedBuilder.setThumbnail("https://avatars.githubusercontent.com/u/90012124?s=400&u=3aa2a230843e9a8bd39c194e00c565d2d556081a&v=4")
+    embedBuilder.setColor(color)
+    embedBuilder.setDescription(message)
+
+    return embedBuilder.build()
+
+}

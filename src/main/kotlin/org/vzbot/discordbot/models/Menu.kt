@@ -44,7 +44,7 @@ object Menu {
         for (chart in VzBot.flowChartFileManager.getFlowCharts()) {
             builder.addField(chart.startPoint.title, "Points: ${chart.getAllPoints().size} \n Metas: ${
                 chart.getAllPoints().sumOf { it.value.size }
-            } \n Attached files: ${chart.getAllPoints().map { it.value }.sumOf { it.count { value -> value is STLMedia } } } ", true)
+            } \n Attached files: ${chart.getAllPoints().map { it.value }.sumOf { it.count { value -> value is STLMedia } } }", true)
         }
 
         msg.editMessageEmbeds(builder.build()).queue()
@@ -100,6 +100,16 @@ object Menu {
         val name = TextInput.create("title", "Name", TextInputStyle.SHORT).build()
         val url = TextInput.create("url", "URL", TextInputStyle.PARAGRAPH).setPlaceholder("Link to where this meta is directing to").build()
         val modal = Modal.create("c_create_meta", "Create a new meta value")
+
+        modal.addActionRows(ActionRow.of(name), ActionRow.of(url))
+        return modal.build()
+    }
+
+    fun editMetaModel(meta: SavedMedia<*>): Modal {
+        val name = TextInput.create("title", "Name", TextInputStyle.SHORT).build()
+        val url = TextInput.create("url", "URL", TextInputStyle.PARAGRAPH).setPlaceholder(meta.getMetaRaw()).build()
+        val modal = Modal.create("c_edit_meta_modal+${meta.getTitle()}", "Edit a the ${meta.getTitle()} name and value")
+
         modal.addActionRows(ActionRow.of(name), ActionRow.of(url))
         return modal.build()
     }
@@ -107,7 +117,7 @@ object Menu {
     fun editMetaSelectionMenu(point: Datapoint, msg: Message) {
         val menu = SelectMenu.create("select_meta")
 
-        for (meta in point.value.filter { it !is STLMedia }) {
+        for (meta in point.value.filterIsInstance<StringMedia>()) {
             menu.addOption(meta.getTitle(), meta.getTitle())
         }
 

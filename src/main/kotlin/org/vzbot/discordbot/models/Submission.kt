@@ -15,7 +15,6 @@ val submissionDAO = SubmissionDAO(VzBot.databaseConnector.connectionSourced())
 class Submission: FileAble {
 
 
-
     @DatabaseField(generatedId = true)
     var id: Long = 0
 

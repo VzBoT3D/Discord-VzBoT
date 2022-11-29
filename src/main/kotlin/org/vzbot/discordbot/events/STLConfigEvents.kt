@@ -1,7 +1,5 @@
 package org.vzbot.discordbot.events
 
-import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent
@@ -9,16 +7,9 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import net.dv8tion.jda.api.interactions.components.ActionRow
-import net.dv8tion.jda.api.interactions.components.Modal
-import net.dv8tion.jda.api.interactions.components.buttons.Button
-import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
-import net.dv8tion.jda.api.interactions.components.text.TextInput
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.vzbot.discordbot.LocationGetter
-import org.vzbot.discordbot.filemanagers.implementations.FlowChartFileManager
 import org.vzbot.discordbot.models.*
-import org.vzbot.discordbot.util.STLFinderManager
+import org.vzbot.discordbot.util.STLConfigurationManager
 import org.vzbot.discordbot.util.defaultEmbed
 import org.vzbot.discordbot.vzbot.VzBot
 import java.awt.Color
@@ -36,17 +27,15 @@ class STLConfigEvents: ListenerAdapter() {
         if (event.channel !is TextChannel) return
 
         if (!buttonID.startsWith("c")) return
-        if (!STLFinderManager.isConfiguring(clicker, event.message)) return event.replyEmbeds(defaultEmbed("Error", Color.RED, "This is not your stl configurator")).queue()
-
-        println(buttonID)
+        if (!STLConfigurationManager.isConfiguring(clicker, event.message)) return event.replyEmbeds(defaultEmbed("Error", Color.RED, "This is not your stl configurator")).queue()
 
         if (buttonID == "c_cancel") {
-            STLFinderManager.resetMember(clicker)
+            STLConfigurationManager.resetMember(clicker)
             return event.message.delete().queue()
         }
 
         if (buttonID == "c_cancel_chart") {
-            STLFinderManager.resetChart(clicker)
+            STLConfigurationManager.resetChart(clicker)
             Menu.chartMenu(event.message)
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
@@ -65,7 +54,7 @@ class STLConfigEvents: ListenerAdapter() {
         }
 
         if (buttonID == "c_cancel_edit_chart") {
-            Menu.chartMenu(STLFinderManager.getMessageConfiguring(event.member!!))
+            Menu.chartMenu(STLConfigurationManager.getMessageConfiguring(event.member!!))
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
 
@@ -89,13 +78,18 @@ class STLConfigEvents: ListenerAdapter() {
         }
 
         if (buttonID == "c_chart_done") {
-            val chart = STLFinderManager.getChartFromMember(event.member!!)
+            val chart = STLConfigurationManager.getChartFromMember(event.member!!)
+
+            if (VzBot.flowChartFileManager.hasFlowChart(chart.startPoint.title)) {
+                VzBot.flowChartFileManager.deleteChart(chart.startPoint.title)
+            }
+
             chart.asYML(VzBot.flowChartFileManager.getYaml())
 
             VzBot.flowChartFileManager.saveFile()
 
-            Menu.chartMenu(STLFinderManager.getMessageConfiguring(event.member!!))
-            STLFinderManager.resetChart(event.member!!)
+            Menu.chartMenu(STLConfigurationManager.getMessageConfiguring(event.member!!))
+            STLConfigurationManager.resetChart(event.member!!)
 
             return event.reply("Your chart has been saved.").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
         }
@@ -109,7 +103,7 @@ class STLConfigEvents: ListenerAdapter() {
         }
 
         if (buttonID == "c_edit_meta") {
-            val msg = STLFinderManager.getMessageFromID(event.messageId)
+            val msg = STLConfigurationManager.getMessageFromID(event.messageId)
             Menu.metaConfiguratorMenu(msg)
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
@@ -119,7 +113,7 @@ class STLConfigEvents: ListenerAdapter() {
         }
 
         if (buttonID == "c_edit_meta_dir") {
-            val point = STLFinderManager.getCurrentPoint(clicker)
+            val point = STLConfigurationManager.getCurrentPoint(clicker)
 
             if (point.value.none { it !is STLMedia }) {
                 return event.reply("This point does not have any metavalues yet").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
@@ -139,13 +133,13 @@ class STLConfigEvents: ListenerAdapter() {
         if (buttonID == "c_upload_meta") {
             Menu.metaFileUploadMenu(event.message)
 
-            STLFinderManager.addUploading(event.member!!, event.channel as TextChannel)
+            STLConfigurationManager.addUploading(event.member!!, event.channel as TextChannel)
 
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
 
         if (buttonID == "c_meta_add_chart") {
-            val chart = STLFinderManager.getChartFromMember(clicker)
+            val chart = STLConfigurationManager.getChartFromMember(clicker)
 
             if (VzBot.flowChartFileManager.getFlowCharts().filter { it.startPoint.title != chart.startPoint.title }.isEmpty()) {
                 return event.reply("There are no flowcharts yet").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
@@ -157,7 +151,7 @@ class STLConfigEvents: ListenerAdapter() {
         }
 
         if (buttonID == "c_delete_meta") {
-            val point = STLFinderManager.getCurrentPoint(clicker)
+            val point = STLConfigurationManager.getCurrentPoint(clicker)
 
             if (point.value.isEmpty()) {
                 return event.reply("This point does not have any metavalues yet").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
@@ -169,7 +163,7 @@ class STLConfigEvents: ListenerAdapter() {
         }
 
         if (buttonID == "c_meta_done") {
-            val msg = STLFinderManager.getMessageFromID(event.messageId)
+            val msg = STLConfigurationManager.getMessageFromID(event.messageId)
             Menu.metaConfiguratorMenu(msg)
 
             return event.reply("").queue { it.deleteOriginal().queue() }
@@ -177,9 +171,9 @@ class STLConfigEvents: ListenerAdapter() {
 
         if (buttonID == "c_cancel_meta") {
 
-            val currentPoint = STLFinderManager.getCurrentPoint(event.member!!)
-            val msg = STLFinderManager.getMessageConfiguring(event.member!!)
-            val chart = STLFinderManager.getChartFromMember(event.member!!)
+            val currentPoint = STLConfigurationManager.getCurrentPoint(event.member!!)
+            val msg = STLConfigurationManager.getMessageConfiguring(event.member!!)
+            val chart = STLConfigurationManager.getChartFromMember(event.member!!)
 
             Menu.pointMenu(currentPoint, msg, chart)
             return event.reply("").queue { it.deleteOriginal().queue() }
@@ -202,9 +196,9 @@ class STLConfigEvents: ListenerAdapter() {
             val startingPoint = Datapoint(title, mutableListOf())
             val chart = Flowchart(startingPoint)
 
-            STLFinderManager.addChartToMember(event.member!!, chart)
+            STLConfigurationManager.addChartToMember(event.member!!, chart)
 
-            val msg = STLFinderManager.getMessageConfiguring(event.member!!)
+            val msg = STLConfigurationManager.getMessageConfiguring(event.member!!)
 
             Menu.pointMenu(startingPoint, msg, chart)
             event.reply("").queue { it.deleteOriginal().queue() }
@@ -214,14 +208,14 @@ class STLConfigEvents: ListenerAdapter() {
             val title = event.getValue("title")!!.asString
 
             val point = Datapoint(title, mutableListOf())
-            val chart = STLFinderManager.getChartFromMember(event.member!!)
+            val chart = STLConfigurationManager.getChartFromMember(event.member!!)
 
             if (chart.hasPoint(point.title)) return event.reply("There is already a point with the given name!").queue {it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS)}
 
-            STLFinderManager.getCurrentPoint(event.member!!).nextPoints += point
-            STLFinderManager.setCurrentPoint(event.member!!, point)
+            STLConfigurationManager.getCurrentPoint(event.member!!).nextPoints += point
+            STLConfigurationManager.setCurrentPoint(event.member!!, point)
 
-            val msg = STLFinderManager.getMessageConfiguring(event.member!!)
+            val msg = STLConfigurationManager.getMessageConfiguring(event.member!!)
 
             Menu.pointMenu(point, msg, chart)
 
@@ -230,14 +224,14 @@ class STLConfigEvents: ListenerAdapter() {
 
         if (modalID.startsWith("c_change_point")) {
             val title = event.getValue("title")!!.asString
-            val chart = STLFinderManager.getChartFromMember(event.member!!)
+            val chart = STLConfigurationManager.getChartFromMember(event.member!!)
 
             if (chart.hasPoint(title)) return event.reply("There is already a point with the given name!").queue {it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS)}
 
-            val point = STLFinderManager.getCurrentPoint(event.member!!)
+            val point = STLConfigurationManager.getCurrentPoint(event.member!!)
             point.title = title
 
-            val msg = STLFinderManager.getMessageConfiguring(event.member!!)
+            val msg = STLConfigurationManager.getMessageConfiguring(event.member!!)
 
             Menu.pointMenu(point, msg, chart)
 
@@ -248,9 +242,7 @@ class STLConfigEvents: ListenerAdapter() {
             val title = event.getValue("title")!!.asString
             val url = event.getValue("url")!!.asString
 
-            val point = STLFinderManager.getCurrentPoint(event.member!!)
-
-            point.value.removeIf { it.getTitle() ==  title}
+            val point = STLConfigurationManager.getCurrentPoint(event.member!!)
 
             if (point.value.any {it.getTitle() == title}) {
                 return event.reply("There is already a meta with this title existing").queue()
@@ -259,7 +251,30 @@ class STLConfigEvents: ListenerAdapter() {
 
             point.value += StringMedia(title.replace(".", ""), url)
 
-            val msg = STLFinderManager.getMessageConfiguring(event.member!!)
+            val msg = STLConfigurationManager.getMessageConfiguring(event.member!!)
+            Menu.metaConfiguratorMenu(msg)
+
+            event.reply("").queue { it.deleteOriginal().queue() }
+        }
+
+        if (modalID.startsWith("c_edit_meta_modal")) {
+            val title = event.getValue("title")!!.asString
+            val url = event.getValue("url")!!.asString
+
+            val point = STLConfigurationManager.getCurrentPoint(event.member!!)
+
+            val metaString = modalID.split("+")[1]
+
+            if (point.value.none { it.getTitle() == metaString }) {
+                return event.reply("An error occurred while trying to edit the  meta.").queue()
+            }
+
+            val meta = point.value.first { it.getTitle() == metaString }
+
+            point.value -= meta
+            point.value += StringMedia(title, url)
+
+            val msg = STLConfigurationManager.getMessageConfiguring(event.member!!)
             Menu.metaConfiguratorMenu(msg)
 
             event.reply("").queue { it.deleteOriginal().queue() }
@@ -270,20 +285,20 @@ class STLConfigEvents: ListenerAdapter() {
         val menuID = event.componentId
         val member = event.member!!
 
-        if (!STLFinderManager.isConfiguring(member, event.message)) return event.replyEmbeds(defaultEmbed("Error", Color.RED, "This is not your stl configurator")).queue()
+        if (!STLConfigurationManager.isConfiguring(member, event.message)) return event.replyEmbeds(defaultEmbed("Error", Color.RED, "This is not your stl configurator")).queue()
 
         if (menuID == "select_point") {
             val selectedPoint = event.selectedOptions[0].value
-            val chart = STLFinderManager.getChartFromMember(member)
+            val chart = STLConfigurationManager.getChartFromMember(member)
 
             if (!chart.hasPoint(selectedPoint)) {
                 return event.reply("An error occurred while trying to navigate to your given point").queue()
             }
 
             val point = chart.getPoint(selectedPoint)
-            STLFinderManager.setCurrentPoint(event.member!!, point)
+            STLConfigurationManager.setCurrentPoint(event.member!!, point)
 
-            val msg = STLFinderManager.getMessageFromID(event.messageId)
+            val msg = STLConfigurationManager.getMessageFromID(event.messageId)
 
             Menu.pointMenu(point, msg, chart)
             event.reply("").queue { it.deleteOriginal().queue() }
@@ -292,26 +307,28 @@ class STLConfigEvents: ListenerAdapter() {
         if (menuID == "select_meta") {
             val selectedMeta = event.selectedOptions[0].value
 
-            val chart = STLFinderManager.getChartFromMember(member)
+            val point = STLConfigurationManager.getCurrentPoint(member)
 
-            if (!chart.getAllPoints().any { it.value.any { value -> value.getTitle() == selectedMeta } }) {
+            if (point.value.none { it.getTitle() == selectedMeta }) {
                 return event.reply("An error occurred while trying to navigate to your given meta").queue()
             }
 
-            val modal = Menu.createMetaModal()
+            val meta = point.value.first { it.getTitle() == selectedMeta }
+
+            val modal = Menu.editMetaModel(meta)
             return event.replyModal(modal).queue()
         }
 
         if (menuID == "delete_meta") {
             val selectedMeta = event.selectedOptions[0].value
 
-            val chart = STLFinderManager.getChartFromMember(member)
+            val chart = STLConfigurationManager.getChartFromMember(member)
 
             if (!chart.getAllPoints().any { it.value.any { value -> value.getTitle() == selectedMeta } }) {
                 return event.reply("An error occurred while trying to navigate to your given meta").queue()
             }
 
-            val point = STLFinderManager.getCurrentPoint(member)
+            val point = STLConfigurationManager.getCurrentPoint(member)
 
             val meta = point.value.first { it.getTitle() ==  selectedMeta }
 
@@ -320,7 +337,7 @@ class STLConfigEvents: ListenerAdapter() {
             }
             point.value -= meta
 
-            val msg = STLFinderManager.getMessageConfiguring(member)
+            val msg = STLConfigurationManager.getMessageConfiguring(member)
 
             Menu.metaConfiguratorMenu(msg)
 
@@ -335,10 +352,9 @@ class STLConfigEvents: ListenerAdapter() {
                 return
             }
 
-
             val chart = VzBot.flowChartFileManager.getFlowCharts().first { it.startPoint.title == selectedChart }
 
-            STLFinderManager.addChartToMember(member, chart)
+            STLConfigurationManager.addChartToMember(member, chart)
 
             Menu.pointMenu(chart.startPoint, event.message, chart)
             return event.reply("").queue { it.deleteOriginal().queue() }
@@ -366,7 +382,7 @@ class STLConfigEvents: ListenerAdapter() {
             }
 
             val chart = VzBot.flowChartFileManager.getFlowchart(selectedChart)!!
-            val point = STLFinderManager.getCurrentPoint(member)
+            val point = STLConfigurationManager.getCurrentPoint(member)
 
             if (point.value.any {it.getTitle() == selectedChart}) {
                 event.reply("This chart has already been added to this point").queue {it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS)}
@@ -387,12 +403,12 @@ class STLConfigEvents: ListenerAdapter() {
         val member = event.member!!
         val message = event.message
 
-        if (!STLFinderManager.isUploading(member)) return
-        if (STLFinderManager.getUploadChannel(member) != event.channel) return
+        if (!STLConfigurationManager.isUploading(member)) return
+        if (STLConfigurationManager.getUploadChannel(member) != event.channel) return
         if (message.attachments.size == 0) return
 
-        val chart = STLFinderManager.getChartFromMember(member)
-        val point = STLFinderManager.getCurrentPoint(member)
+        val chart = STLConfigurationManager.getChartFromMember(member)
+        val point = STLConfigurationManager.getCurrentPoint(member)
 
         for (attachment in message.attachments) {
             val dir = File(LocationGetter().getLocation().absolutePath + "/VZBot/charts/data/${chart.startPoint.title}/${point.title}/${attachment.fileName}")

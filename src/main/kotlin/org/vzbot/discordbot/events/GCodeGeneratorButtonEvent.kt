@@ -20,7 +20,7 @@ class GCodeGeneratorButtonEvent: ListenerAdapter() {
         val buttonID = event.componentId
         val clicker = event.member ?: return
 
-        if (buttonID.startsWith("c")) return
+        if (buttonID.startsWith("c") || buttonID.startsWith("s")) return
 
         if (!gCodeGeneratorManager.hasMember(clicker))  {
             event.reply("You cannot click the buttons if you are not the owner of the execution.").queue()

@@ -68,7 +68,4 @@ class Speedtest: Command("gcodegenerator", cmd, false) {
                     Direction.RIGHT_UP_LEFT.unicode)))
             .addActionRow(Button.primary("submit", "Submit"),Button.danger("delete", "Delete last movement"), Button.danger("cancel", "Cancel")).queue { q -> (q.retrieveOriginal().queue { m -> gCodeGeneratorManager.addId(member, m.id)}) }
     }
-
-
-
 }

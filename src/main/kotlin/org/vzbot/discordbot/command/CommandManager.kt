@@ -59,7 +59,7 @@ class CommandManager() {
         for (command in commands) {
             if (command.name == name) {
                 if (command.admin) {
-                    if (!member.hasPermission(Permission.ADMINISTRATOR)) {
+                    if (!member.isModerator()) {
                         event.replyEmbeds(defaultEmbed("Missing permission", Color.RED, "Error")).queue()
                         return
                     }
@@ -69,4 +69,8 @@ class CommandManager() {
             }
         }
     }
+}
+
+fun Member.isModerator(): Boolean {
+    return hasPermission(Permission.ADMINISTRATOR) || roles.contains(jda.getRoleById(832684482003468338))
 }
