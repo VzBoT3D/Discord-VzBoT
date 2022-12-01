@@ -45,11 +45,13 @@ object STLFinderMenu {
         embed.addField("Current Configuration", previousPoints.joinToString(separator = " ") { "-> ${it.title}" } + " -> ${currentPoint.title}", false)
         embed.addField("Current Topic", currentPoint.title, false)
 
-        if (currentPoint.value.any { it is StringMedia }) {
-            embed.addField("Links", currentPoint.value.filterIsInstance<StringMedia>().joinToString(separator = "\n") { "-> [${it.getTitle()}](${it.getMeta()})" }, false)
+        if (currentPoint.value.any { it is StringMedia} ) {
+            embed.addField("Information", currentPoint.value.filterIsInstance<StringMedia>().joinToString(separator = "\n") { "-> ${it.getMeta()}" }, false)
         }
+
         if (currentPoint.value.any { it is STLMedia }) {
-            embed.addField("Files", currentPoint.value.filterIsInstance<STLMedia>().joinToString(separator = "\n") { "-> ${it.getMetaRaw().split("\\").last()}" }, false)
+            embed.addField("Files", currentPoint.value.filterIsInstance<STLMedia>().joinToString(separator = "\n") { "-> ${it.getMetaRaw().split(
+                    "[\\\\\\/]".toRegex()).last()}" }, false)
         }
 
         msg.editMessageEmbeds(embed.build()).queue()
@@ -84,11 +86,11 @@ object STLFinderMenu {
         val embed = EmbedBuilder(defaultEmbed("The following files have been found", Color.ORANGE, "Filefinder"))
 
         embed.addField("Found files", files.joinToString(separator = "\n") {
-            it.getMetaRaw().split("\\").last().replace(query, "**$query**")
+            it.getMetaRaw().split("[\\\\\\/]".toRegex()).last().replace(query, "**$query**", ignoreCase = true)
         }, false)
 
 
         msg.editMessageEmbeds(embed.build()).queue()
-        msg.editMessageComponents(ActionRow.of(Button.secondary("s_search", "Search for another file"), Button.secondary("s_download_file", "Download found files")), ActionRow.of(Button.danger("s_back_search", "Back"))).queue()
+        msg.editMessageComponents(ActionRow.of(Button.secondary("s_search", "Search for another file"), Button.secondary("s_download_files", "Download found files")), ActionRow.of(Button.danger("s_back_search", "Back"))).queue()
     }
 }

@@ -10,6 +10,7 @@ import org.vzbot.discordbot.models.STLFinderMenu
 import org.vzbot.discordbot.models.STLMedia
 import org.vzbot.discordbot.util.STLFinderManager
 import org.vzbot.discordbot.vzbot.VzBot
+import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 
 class STLFinderEvents: ListenerAdapter() {
@@ -22,7 +23,9 @@ class STLFinderEvents: ListenerAdapter() {
         if (!buttonID.startsWith("s")) return
         if (event.channel !is TextChannel) return
 
-        if (!STLFinderManager.isUserSTLFinding(clicker, event.message)) return event.reply("").queue()
+        if (!STLFinderManager.isUserSTLFinding(clicker, event.message)) {
+            return event.reply("").queue { it.deleteOriginal().queue()}
+        }
 
         if (buttonID == "s_cancel") {
             STLFinderManager.reset(clicker)
@@ -36,12 +39,12 @@ class STLFinderEvents: ListenerAdapter() {
 
         if (buttonID == "s_back") {
             if (STLFinderManager.getPreviousPoints(clicker).isEmpty()) {
+                STLFinderManager.removeCurrentPoint(clicker)
                 STLFinderMenu.chartMenu(event.message)
                 return event.reply("").queue { it.deleteOriginal().queue() }
             }
 
             val previousPoint = STLFinderManager.getPreviousPoints(clicker).last()
-
 
             val chart = if (VzBot.flowChartFileManager.hasFlowChart(previousPoint.title)) {
                 VzBot.flowChartFileManager.getFlowchart(previousPoint.title)!!
@@ -59,6 +62,11 @@ class STLFinderEvents: ListenerAdapter() {
         }
 
         if (buttonID == "s_back_search") {
+            if (!STLFinderManager.hasCurrentPoint(clicker)) {
+                STLFinderMenu.chartMenu(event.message)
+                return event.reply("").queue { it.deleteOriginal().queue() }
+            }
+
             val currentPoint = STLFinderManager.getCurrentPoint(clicker)
             val chart = STLFinderManager.getUserChart(clicker)
 
@@ -67,40 +75,23 @@ class STLFinderEvents: ListenerAdapter() {
         }
 
         if (buttonID == "s_download_files") {
-            val files = STLFinderManager.getCurrentPoint(clicker).value.filterIsInstance<STLMedia>().map { it.getMeta() }
+            val files = STLFinderManager.getFoundFiles(clicker).map {it.getMeta()}
 
             event.deferReply().queue()
 
             val tc = event.channel as TextChannel
-            val chart = STLFinderManager.getUserChart(clicker)
+            val chart = if(STLFinderManager.hasUserChart(clicker)) STLFinderManager.getUserChart(clicker).startPoint.title else "VzBoT"
 
-            val zip = ZipFile("${LocationGetter().getLocation()}/VZBoT/temp/${chart.startPoint.title} ${clicker.effectiveName}.zip")
+            val zip = ZipFile("${LocationGetter().getLocation()}/VZBoT/temp/$chart ${clicker.effectiveName}.zip")
 
             for (file in files) {
                 zip.addFile(file)
             }
 
-            tc.sendFile(zip.file).queue { run {
-                zip.file.delete()
-                it.delete().queueAfter(3, TimeUnit.MINUTES)
-                event.hook.sendMessage("The files will be deleted in 3 minutes.").queue { it.delete().queueAfter(10, TimeUnit.SECONDS) }
-            } }
+            val size = Files.size(zip.file.toPath()) / 1024 / 1024
 
-            return
-        }
-
-        if (buttonID == "s_download_file") {
-            val files = STLFinderManager.getFoundFiles(clicker).map {it.getMeta()}
-            val tc = event.channel as TextChannel
-
-            event.deferReply().queue()
-
-            val chart = STLFinderManager.getUserChart(clicker)
-
-            val zip = ZipFile("${LocationGetter().getLocation()}/VZBoT/temp/${chart.startPoint.title} ${clicker.effectiveName}.zip")
-
-            for (file in files) {
-                zip.addFile(file)
+            if (size > 99) {
+                return event.hook.sendMessage("The selected files are over 100mb in size. Please select a more narrow selection").queue()
             }
 
             tc.sendFile(zip.file).queue { run {
@@ -123,6 +114,8 @@ class STLFinderEvents: ListenerAdapter() {
             STLFinderManager.addUserChart(clicker, chart)
             STLFinderManager.setCurrentPoint(clicker, chart.startPoint)
 
+            STLFinderManager.setFoundFiles(clicker, chart.startPoint.value.filterIsInstance<STLMedia>())
+
             STLFinderMenu.currentPointMenu(event.message, chart, chart.startPoint, STLFinderManager.getPreviousPoints(clicker))
             return event.reply("").queue { it.deleteOriginal().queue() }
         } else if (STLFinderManager.hasUserChart(clicker)){
@@ -138,6 +131,8 @@ class STLFinderEvents: ListenerAdapter() {
 
             STLFinderManager.addPreviousPoint(clicker, currentPoint)
             STLFinderManager.setCurrentPoint(clicker, point)
+
+            STLFinderManager.setFoundFiles(clicker, point.value.filterIsInstance<STLMedia>())
 
             STLFinderMenu.currentPointMenu(event.message, chart, point, STLFinderManager.getPreviousPoints(clicker))
             return event.reply("").queue { it.deleteOriginal().queue() }
@@ -156,10 +151,12 @@ class STLFinderEvents: ListenerAdapter() {
             return if (!STLFinderManager.hasCurrentPoint(member)) {
                 val startPoints = VzBot.flowChartFileManager.getFlowCharts()
 
+
                 val allPoints = startPoints.map { it.getAllPoints() }.flatten()
+
                 val allValues = allPoints.map { it.value }.flatten()
 
-                val files = allValues.filterIsInstance<STLMedia>().filter { it.getMetaRaw().contains(query) }
+                val files = allValues.filterIsInstance<STLMedia>().filter { it.getMetaRaw().contains(query, ignoreCase = true) }
 
                 STLFinderManager.setFoundFiles(member, files)
 
@@ -167,14 +164,11 @@ class STLFinderEvents: ListenerAdapter() {
                 event.reply("").queue { it.deleteOriginal().queue() }
             } else {
                 val point = STLFinderManager.getCurrentPoint(member)
-
-                val allPoints = point.nextPoints.takeWhile { it.nextPoints.isNotEmpty() }
-
-                println(allPoints.size)
+                val allPoints = point.getAllFollowingPoints()
 
                 val allValues = allPoints.map { it.value }.flatten()
 
-                val files = allValues.filterIsInstance<STLMedia>().filter { it.getMetaRaw().contains(query) }
+                val files = allValues.filterIsInstance<STLMedia>().filter { it.getMetaRaw().contains(query, ignoreCase = true) }
 
                 STLFinderManager.setFoundFiles(member, files)
 

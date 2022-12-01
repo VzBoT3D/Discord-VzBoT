@@ -16,6 +16,7 @@ object STLFinderManager {
 
     fun addUserSTLFinding(member: Member, message: Message) = run { userMessageMap[member] = message }
 
+    fun hasUserSTLFinder(member: Member) = userMessageMap.containsKey(member)
     fun isUserSTLFinding(member: Member, message: Message) = userMessageMap[member] == message
 
     fun addUserChart(member: Member, chart: Flowchart) = run { userCurrentChartMap[member] = chart }
@@ -23,6 +24,7 @@ object STLFinderManager {
     fun hasUserChart(member: Member) = userCurrentChartMap.containsKey(member)
     fun getUserChart(member: Member) = userCurrentChartMap[member]!!
     fun getMessage(member: Member) = userMessageMap[member]!!
+    fun removeCurrentPoint(member: Member) = userCurrentPointMap.remove(member)
 
     fun setFoundFiles(member: Member, files: List<STLMedia>) {
         foundFiles[member] = files
@@ -53,6 +55,10 @@ object STLFinderManager {
 
     fun reset(member: Member) {
         userMessageMap.remove(member)
+        userCurrentChartMap.remove(member)
+        userPreviousPointMap.remove(member)
+        userCurrentChartMap.remove(member)
+        foundFiles.remove(member)
     }
 
 }

@@ -4,22 +4,8 @@ import org.simpleyaml.configuration.file.YamlFile
 
 class Flowchart(val startPoint: Datapoint) {
 
-    fun getAllPoints(): MutableList<Datapoint> {
-        val points = mutableListOf<Datapoint>()
-
-        val pointsToIterate = mutableListOf<Datapoint>().apply { add(startPoint) }
-
-        while (pointsToIterate.isNotEmpty()) {
-            val list = mutableListOf<Datapoint>().apply { addAll(pointsToIterate) }
-
-            for (point in list) {
-                pointsToIterate.remove(point)
-                points.add(point)
-
-                pointsToIterate.addAll(point.nextPoints)
-            }
-        }
-        return points
+    fun getAllPoints(): List<Datapoint> {
+        return startPoint.getAllFollowingPoints()
     }
 
     fun getPoint(title: String): Datapoint {
@@ -72,5 +58,23 @@ class Datapoint(var title: String, val value: MutableList<SavedMedia<out Any>>) 
 
     var previousPoint: Datapoint? = null
     var nextPoints: List<Datapoint> = listOf()
+
+    fun getAllFollowingPoints(): List<Datapoint> {
+        val points = mutableListOf<Datapoint>()
+
+        val pointsToIterate = mutableListOf<Datapoint>().apply { add(this@Datapoint) }
+
+        while (pointsToIterate.isNotEmpty()) {
+            val list = mutableListOf<Datapoint>().apply { addAll(pointsToIterate) }
+
+            for (point in list) {
+                pointsToIterate.remove(point)
+                points.add(point)
+
+                pointsToIterate.addAll(point.nextPoints)
+            }
+        }
+        return points
+    }
 
 }

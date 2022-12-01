@@ -411,7 +411,7 @@ class STLConfigEvents: ListenerAdapter() {
         val point = STLConfigurationManager.getCurrentPoint(member)
 
         for (attachment in message.attachments) {
-            val dir = File(LocationGetter().getLocation().absolutePath + "/VZBot/charts/data/${chart.startPoint.title}/${point.title}/${attachment.fileName}")
+            val dir = File(LocationGetter().getLocation().absolutePath + "/VZBoT/charts/data/${chart.startPoint.title}/${point.title}/${attachment.fileName}")
             dir.parentFile.mkdirs()
             attachment.proxy.downloadToFile(dir).whenComplete{ file, _ -> run {
                 if (point.value.any {it.getTitle() == file.name}) {
