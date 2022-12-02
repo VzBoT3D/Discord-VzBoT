@@ -4,6 +4,8 @@ import org.simpleyaml.configuration.file.YamlFile
 
 class Flowchart(val startPoint: Datapoint) {
 
+    val title = startPoint.title
+
     fun getAllPoints(): List<Datapoint> {
         return startPoint.getAllFollowingPoints()
     }
@@ -24,8 +26,8 @@ class Flowchart(val startPoint: Datapoint) {
             list.addAll(pointsToAdd)
 
             for (currentPoint in list) {
+                val prefix = if (currentPoint != startPoint) "$title~${currentPoint.title}." else "${currentPoint.title}."
 
-                val prefix = "${currentPoint.title}."
                 yaml.set("$prefix.title", currentPoint.title)
 
                 if (firstPoint)

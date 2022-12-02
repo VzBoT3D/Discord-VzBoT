@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.interactions.components.Modal
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
-import org.vzbot.discordbot.util.STLFinderManager
 import org.vzbot.discordbot.util.defaultEmbed
 import org.vzbot.discordbot.vzbot.VzBot
 import java.awt.Color
@@ -28,7 +27,18 @@ object STLFinderMenu {
             chartList += Button.primary("s_${chart.startPoint.title}", chart.startPoint.title)
         }
 
-        msg.editMessageComponents(ActionRow.of(chartList), ActionRow.of(Button.secondary("s_search", "Search for a specific file")), ActionRow.of(Button.danger("s_cancel", "Cancel"))).queue()
+        val list = chartList.chunked(5)
+
+        val actionRows = mutableListOf<ActionRow>()
+
+        for (buttons in list) {
+            actionRows += ActionRow.of(buttons)
+        }
+
+        actionRows += ActionRow.of(Button.secondary("s_search", "Search for a specific file"))
+        actionRows += ActionRow.of(Button.danger("s_cancel", "Cancel"))
+
+        msg.editMessageComponents(actionRows).queue()
         val embed = defaultEmbed(
             "Welcome to the VzBoT **STL-Finder**.\n Use the blue buttons to navigate to a section. In every section there are multiple topics leading you to your stls. " +
                     "\nJust select your configuration from the given options.\n You can also search directly for stl files by using the search option.",
@@ -56,21 +66,22 @@ object STLFinderMenu {
 
         msg.editMessageEmbeds(embed.build()).queue()
 
-        val chartList = mutableListOf<Button>()
+        val pointList = mutableListOf<Button>()
 
         for (point in currentPoint.nextPoints) {
-            chartList += Button.primary("s_${point.title}", point.title)
+            pointList += Button.primary("s_${point.title}", point.title)
         }
 
         for (chart in currentPoint.value.filterIsInstance<ChartMedia>()) {
-            chartList += Button.primary("s_${chart.getMeta().startPoint.title}", chart.getMeta().startPoint.title)
+            // add point pointing to another chart
+            pointList += Button.primary("s_${chart.getMeta().startPoint.title}", chart.getMeta().startPoint.title)
         }
 
-        if (chartList.isNotEmpty()) {
+        if (pointList.isNotEmpty()) {
             if (currentPoint.value.any { it is STLMedia }) {
-                msg.editMessageComponents(ActionRow.of(chartList), ActionRow.of(Button.secondary("s_search", "Search for a specific file"), Button.secondary("s_download_files", "Download files")), ActionRow.of(Button.primary("s_back", "Back"), Button.danger("s_cancel", "Cancel"))).queue()
+                msg.editMessageComponents(ActionRow.of(pointList), ActionRow.of(Button.secondary("s_search", "Search for a specific file"), Button.secondary("s_download_files", "Download files")), ActionRow.of(Button.primary("s_back", "Back"), Button.danger("s_cancel", "Cancel"))).queue()
             } else {
-                msg.editMessageComponents(ActionRow.of(chartList), ActionRow.of(Button.secondary("s_search", "Search for a specific file")), ActionRow.of(Button.primary("s_back", "Back"), Button.danger("s_cancel", "Cancel"))).queue()
+                msg.editMessageComponents(ActionRow.of(pointList), ActionRow.of(Button.secondary("s_search", "Search for a specific file")), ActionRow.of(Button.primary("s_back", "Back"), Button.danger("s_cancel", "Cancel"))).queue()
             }
         } else {
             if (currentPoint.value.any { it is STLMedia }) {

@@ -211,6 +211,7 @@ class STLConfigEvents: ListenerAdapter() {
             val chart = STLConfigurationManager.getChartFromMember(event.member!!)
 
             if (chart.hasPoint(point.title)) return event.reply("There is already a point with the given name!").queue {it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS)}
+            if (STLConfigurationManager.getCurrentPoint(event.member!!).nextPoints.size > 4) return event.reply("There are already 5 points attached to this point :).").queue {it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS)}
 
             STLConfigurationManager.getCurrentPoint(event.member!!).nextPoints += point
             STLConfigurationManager.setCurrentPoint(event.member!!, point)
@@ -414,12 +415,17 @@ class STLConfigEvents: ListenerAdapter() {
             val dir = File(LocationGetter().getLocation().absolutePath + "/VZBoT/charts/data/${chart.startPoint.title}/${point.title}/${attachment.fileName}")
             dir.parentFile.mkdirs()
             attachment.proxy.downloadToFile(dir).whenComplete{ file, _ -> run {
-                if (point.value.any {it.getTitle() == file.name}) {
+                if (point.value.filterIsInstance<STLMedia>().any { it.getMeta().name == file.name }) {
                     return@run event.message.addReaction(Emoji.fromFormatted("❌")).queue()
                 }
 
                 point.value += STLMedia(file)
-                event.message.addReaction(Emoji.fromFormatted("✅")).queue { event.message.delete().queueAfter(10, TimeUnit.SECONDS) }
+                event.message.addReaction(Emoji.fromFormatted("✅")).queue {
+                    try {
+                        event.message.delete().queueAfter(10, TimeUnit.SECONDS)
+                    } catch (_: Exception) {
+                    }
+                }
             } }
         }
     }

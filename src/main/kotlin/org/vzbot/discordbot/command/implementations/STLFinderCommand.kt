@@ -7,29 +7,24 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.buttons.Button
 import org.vzbot.discordbot.command.Command
+import org.vzbot.discordbot.models.STLFinderMenu
 import org.vzbot.discordbot.util.STLConfigurationManager
 import org.vzbot.discordbot.util.STLFinderManager
 import org.vzbot.discordbot.util.defaultEmbed
 import org.vzbot.discordbot.vzbot.VzBot
 import java.awt.Color
+import java.util.concurrent.TimeUnit
 
-private val cmdData = Commands.slash("stlfinder", "Navigate trough our files to find your desired stl").addOption(OptionType.BOOLEAN, "reset", "Resets your old finder", false)
+private val cmdData = Commands.slash("stlfinder", "Navigate trough our files to find your desired stl")
 
 class STLFinderCommand: Command("stlfinder", cmdData, false) {
 
     override fun execute(member: Member, event: SlashCommandInteractionEvent) {
 
-        if (event.getOption("reset") != null) {
-            val opt = event.getOption("reset")
-            val reset = opt!!.asBoolean
+        STLFinderManager.reset(member)
 
-            if (reset) {
-                STLFinderManager.reset(member)
-            }
-        }
-
-         if (STLFinderManager.hasUserSTLFinder(member)) {
-             return event.replyEmbeds(defaultEmbed("You have already opened another STLFinder. If you cant find it anymore use /stlfinder and set the reset option to true")).queue()
+        if (STLFinderManager.hasUserSTLFinder(member)) {
+             return event.replyEmbeds(defaultEmbed("You have already opened another STLFinder.")).queue()
          }
 
         val embed = defaultEmbed(
@@ -50,9 +45,9 @@ class STLFinderCommand: Command("stlfinder", cmdData, false) {
             return event.reply("There are currently no STLs yet.").queue()
         }
 
-        event.replyEmbeds(embed)
-            .addActionRows(ActionRow.of(chartList), ActionRow.of(Button.secondary("s_search", "Search for an specific file")), ActionRow.of(Button.danger("s_cancel", "Cancel"))).queue { it ->
-            it.retrieveOriginal().queue { STLFinderManager.addUserSTLFinding(member, it) }
-        }
+        event.replyEmbeds(defaultEmbed("Loading STLFinder...", Color.ORANGE, "STLFinder")).queue { it.retrieveOriginal().queue {
+            STLFinderManager.addUserSTLFinding(member, it)
+            STLFinderMenu.chartMenu(it)
+        } }
     }
 }

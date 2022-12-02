@@ -62,34 +62,36 @@ class FlowChartFileManager(private val location: File): FileManager {
 
         val startPoint = Datapoint(key, mutableListOf())
 
-        addMetaToPoint(startPoint)
+        addMetaToPoint(startPoint, true, key)
 
         for (nextPoint in yamlFile.getStringList("$key.point")) {
-            startPoint.nextPoints += getPoint(nextPoint)
+            startPoint.nextPoints += getPoint(nextPoint, key)
         }
 
         return Flowchart(startPoint)
 
     }
-    private fun getPoint(key: String): Datapoint {
+    private fun getPoint(key: String, chartName: String): Datapoint {
 
-        val title = yamlFile.getString("$key.title")
+        val title = yamlFile.getString("$chartName~$key.title")
 
         val point = Datapoint(title, mutableListOf())
-        addMetaToPoint(point)
+        addMetaToPoint(point, false, chartName)
 
-
-        for (nextPoint in yamlFile.getStringList("$key.point")) {
-            point.nextPoints += getPoint(nextPoint)
+        for (nextPoint in yamlFile.getStringList("$chartName~$key.point")) {
+            point.nextPoints += getPoint(nextPoint, chartName)
         }
 
         return point
     }
 
-    private fun addMetaToPoint(point: Datapoint) {
-        if (yamlFile.contains("${point.title}.meta")) {
-            for (metaKeys in yamlFile.getConfigurationSection("${point.title}.meta").getKeys(false)) {
-                val value = yamlFile.getString("${point.title}.meta.$metaKeys")
+    private fun addMetaToPoint(point: Datapoint, startPoint: Boolean, chartName: String) {
+
+        val prefix = if (startPoint) "${point.title}.meta" else "$chartName~${point.title}.meta"
+
+        if (yamlFile.contains(prefix)) {
+            for (metaKeys in yamlFile.getConfigurationSection(prefix).getKeys(false)) {
+                val value = yamlFile.getString("$prefix.$metaKeys")
 
                 try {
                     val file = File(value)
