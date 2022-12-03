@@ -107,7 +107,7 @@ object Menu {
 
     fun editMetaModel(meta: SavedMedia<*>): Modal {
         val name = TextInput.create("title", "Name", TextInputStyle.SHORT).build()
-        val url = TextInput.create("url", "URL", TextInputStyle.PARAGRAPH).setPlaceholder(meta.getMetaRaw()).build()
+        val url = TextInput.create("url", "URL", TextInputStyle.PARAGRAPH).setPlaceholder(if (meta.getMetaRaw().length > 99) meta.getMetaRaw().substring(0, 99) else meta.getMetaRaw()).build()
         val modal = Modal.create("c_edit_meta_modal+${meta.getTitle()}", "Edit a the ${meta.getTitle()} name and value")
 
         modal.addActionRows(ActionRow.of(name), ActionRow.of(url))
@@ -153,7 +153,7 @@ object Menu {
             msg.editMessageComponents(
                 ActionRow.of(Button.primary("c_create_point", "Create a new point")),
                 ActionRow.of(menu.build())
-                ,ActionRow.of(Button.primary("c_edit_meta", "Edit the Meta values"), Button.primary("c_change_name", "Change point name"))
+                ,ActionRow.of(Button.primary("c_edit_meta", "Edit the Meta values"), Button.primary("c_change_name", "Change point name"), Button.danger("c_delete_point", "Delete point below"))
                 ,ActionRow.of(Button.secondary("c_chart_done", "Done"), Button.danger("c_cancel_chart", "Cancel"))).queue()
         } else {
             msg.editMessageComponents(
@@ -161,6 +161,25 @@ object Menu {
                 ,ActionRow.of(Button.primary("c_edit_meta", "Edit the Meta values"), Button.primary("c_change_name", "Change point name"))
                 ,ActionRow.of(Button.secondary("c_chart_done", "Done"), Button.danger("c_cancel_chart", "Cancel"))).queue()
         }
+    }
+
+    fun pointDeleteMenu(msg: Message, nextPoints: List<Datapoint>) {
+        msg.editMessageEmbeds(defaultEmbed("Select the point you want to delete from the list below. This will also delete all points, the deleted point is pointing to.")).queue()
+
+        val menu = SelectMenu.create("c_d_p_menu")
+
+        for (point in nextPoints) {
+            menu.addOption(point.title, point.title)
+        }
+
+        if (nextPoints.size == 1) {
+            menu.addOption("Do not select!", "opt")
+            menu.setDefaultValues(listOf("opt"))
+        }
+
+        menu.maxValues = 1
+
+        msg.editMessageComponents(ActionRow.of(menu.build()), ActionRow.of(Button.danger("c_cancel_meta", "Cancel"))).queue()
     }
 
     fun chartMenu(msg: Message) {

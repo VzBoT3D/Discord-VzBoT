@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.vzbot.discordbot.LocationGetter
 import org.vzbot.discordbot.models.*
 import org.vzbot.discordbot.util.STLConfigurationManager
+import org.vzbot.discordbot.util.STLFinderManager
 import org.vzbot.discordbot.util.defaultEmbed
 import org.vzbot.discordbot.vzbot.VzBot
 import java.awt.Color
@@ -169,6 +170,19 @@ class STLConfigEvents: ListenerAdapter() {
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
 
+        if (buttonID == "c_delete_point") {
+            val msg = STLConfigurationManager.getMessageFromID(event.messageId)
+
+            val subPoints = STLConfigurationManager.getCurrentPoint(clicker).nextPoints
+
+            if (subPoints.isEmpty()) {
+                return event.reply("This point does not have any points yet").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
+            }
+
+            Menu.pointDeleteMenu(msg, subPoints)
+            return
+        }
+
         if (buttonID == "c_cancel_meta") {
 
             val currentPoint = STLConfigurationManager.getCurrentPoint(event.member!!)
@@ -179,7 +193,7 @@ class STLConfigEvents: ListenerAdapter() {
             return event.reply("").queue { it.deleteOriginal().queue() }
         }
 
-        event.reply("There was an error while processing your request. Please report this to devin.").queue()
+        event.reply("There was an error while processing your request. Please report this to devin.").queue {it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS)}
     }
 
     override fun onModalInteraction(event: ModalInteractionEvent) {
@@ -374,6 +388,29 @@ class STLConfigEvents: ListenerAdapter() {
             return event.reply("The chart has been deleted").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
         }
 
+        if (menuID == "c_d_p_menu") {
+            val selectedPoint = event.selectedOptions[0].value
+
+
+            if (selectedPoint == "opt") {
+                return event.reply("Do not select this point!").queue()
+            }
+
+            val chart = STLConfigurationManager.getChartFromMember(member)
+
+            if (!chart.hasPoint(selectedPoint)) {
+                return event.reply("An error occurred while trying to navigate to your given point").queue()
+            }
+
+            val point = chart.getPoint(selectedPoint)
+            val currentPoint = STLConfigurationManager.getCurrentPoint(member)
+
+            currentPoint.nextPoints -= point
+
+            Menu.pointMenu(currentPoint, event.message, chart)
+            return event.reply("The point has been deleted").queue { it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS) }
+        }
+
         if (menuID == "select_link_chart") {
             val selectedChart = event.selectedOptions[0].value
 
@@ -416,7 +453,12 @@ class STLConfigEvents: ListenerAdapter() {
             dir.parentFile.mkdirs()
             attachment.proxy.downloadToFile(dir).whenComplete{ file, _ -> run {
                 if (point.value.filterIsInstance<STLMedia>().any { it.getMeta().name == file.name }) {
-                    return@run event.message.addReaction(Emoji.fromFormatted("❌")).queue()
+                    return@run event.message.addReaction(Emoji.fromFormatted("❌")).queue {
+                        try {
+                            event.message.delete().queueAfter(10, TimeUnit.SECONDS)
+                        } catch (_: Exception) {
+                        }
+                    }
                 }
 
                 point.value += STLMedia(file)

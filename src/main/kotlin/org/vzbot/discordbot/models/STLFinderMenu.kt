@@ -96,9 +96,13 @@ object STLFinderMenu {
 
         val embed = EmbedBuilder(defaultEmbed("The following files have been found", Color.ORANGE, "Filefinder"))
 
-        embed.addField("Found files", files.joinToString(separator = "\n") {
-            it.getMetaRaw().split("[\\\\\\/]".toRegex()).last().replace(query, "**$query**", ignoreCase = true)
-        }, false)
+        if (files.isEmpty()) {
+            embed.addField("Found Files", "No Files found :(", false)
+        } else {
+            embed.addField("Found files", files.joinToString(separator = "\n") {
+                it.getMetaRaw().split("[\\\\\\/]".toRegex()).last().replace(query, "**$query**", ignoreCase = true)
+            }, false)
+        }
 
 
         msg.editMessageEmbeds(embed.build()).queue()

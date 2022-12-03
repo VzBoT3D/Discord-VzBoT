@@ -27,13 +27,6 @@ class STLFinderCommand: Command("stlfinder", cmdData, false) {
              return event.replyEmbeds(defaultEmbed("You have already opened another STLFinder.")).queue()
          }
 
-        val embed = defaultEmbed(
-            "Welcome to the VzBoT **STL-Finder**.\n Use the blue buttons to navigate to a section. In every section there are multiple topics leading you to your stls. " +
-                    "\nJust select your configuration from the given options.\n You can also search directly for stl files by using the search option.",
-            Color.GREEN,
-            "STL-Finder"
-        )
-
         val charts = VzBot.flowChartFileManager.getFlowCharts()
         val chartList = mutableListOf<Button>()
 

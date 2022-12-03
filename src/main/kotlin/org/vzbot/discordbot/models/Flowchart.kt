@@ -58,7 +58,6 @@ class Flowchart(val startPoint: Datapoint) {
 
 class Datapoint(var title: String, val value: MutableList<SavedMedia<out Any>>) {
 
-    var previousPoint: Datapoint? = null
     var nextPoints: List<Datapoint> = listOf()
 
     fun getAllFollowingPoints(): List<Datapoint> {

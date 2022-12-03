@@ -77,6 +77,10 @@ class STLFinderEvents: ListenerAdapter() {
         if (buttonID == "s_download_files") {
             val files = STLFinderManager.getFoundFiles(clicker).map {it.getMeta()}
 
+            if (files.isEmpty()) {
+                return event.reply("There are no files to download.").queue {it.deleteOriginal().queueAfter(10, TimeUnit.SECONDS)}
+            }
+
             event.deferReply().queue()
 
             val tc = event.channel as TextChannel

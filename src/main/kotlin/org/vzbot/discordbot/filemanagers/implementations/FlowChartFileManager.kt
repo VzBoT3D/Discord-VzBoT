@@ -47,9 +47,10 @@ class FlowChartFileManager(private val location: File): FileManager {
     fun deleteChart(title: String) {
 
         val chart = getFlowchart(title)
+        yamlFile.set(chart!!.title, null)
 
-        for (point in chart!!.getAllPoints()) {
-            yamlFile.set(point.title, null)
+        for (point in chart.getAllPoints()) {
+            yamlFile.set("$title~${point.title}", null)
         }
 
         saveFile()
