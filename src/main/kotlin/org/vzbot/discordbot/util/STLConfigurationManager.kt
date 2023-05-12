@@ -2,7 +2,7 @@ package org.vzbot.discordbot.util
 
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import org.vzbot.discordbot.models.Datapoint
 import org.vzbot.discordbot.models.Flowchart
 import java.io.File
@@ -18,18 +18,22 @@ object STLConfigurationManager {
     fun addConfiguring(member: Member, message: Message) = run { configuring[member] = message }
     fun removeConfiguring(member: Member) = configuring.remove(member)
     fun isConfiguring(member: Member): Boolean = configuring.contains(member)
-    fun isConfiguring(member: Member, message: Message): Boolean = configuring.contains(member) && configuring[member] == message
+    fun isConfiguring(member: Member, message: Message): Boolean =
+        configuring.contains(member) && configuring[member] == message
+
     fun getMessageConfiguring(member: Member) = configuring[member]!!
     fun addChartToMember(member: Member, chart: Flowchart) {
         memberChartMap[member] = chart
         currentPointMap[member] = chart.startPoint
     }
+
     fun removeChartFromMember(member: Member) = memberChartMap.remove(member)
     fun getMessageFromID(messageID: String) = configuring.values.first { it.id == messageID }
     fun getChartFromMember(member: Member) = memberChartMap[member]!!
     fun setCurrentPoint(member: Member, point: Datapoint) {
         currentPointMap[member] = point
     }
+
     fun getCurrentPoint(member: Member): Datapoint = currentPointMap[member]!!
     fun removeCurrentPoint(member: Member) = currentPointMap.remove(member)
 
@@ -57,6 +61,4 @@ object STLConfigurationManager {
         removeCurrentPoint(member)
         removeUploadedFiles(member)
     }
-
-
 }

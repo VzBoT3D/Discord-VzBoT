@@ -6,23 +6,25 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.buttons.Button
-import org.vzbot.discordbot.util.Point
+import net.dv8tion.jda.api.utils.FileUpload
 import org.vzbot.discordbot.util.Direction
+import org.vzbot.discordbot.util.Point
 import org.vzbot.discordbot.util.gCodeGeneratorManager
 import java.awt.Color
 import java.io.File
 import java.io.PrintWriter
 
-class GCodeGeneratorButtonEvent: ListenerAdapter() {
-
+class GCodeGeneratorButtonEvent : ListenerAdapter() {
 
     override fun onButtonInteraction(event: ButtonInteractionEvent) {
         val buttonID = event.componentId
         val clicker = event.member ?: return
 
-        if (buttonID.startsWith("c") || buttonID.startsWith("s")) return
+        if (buttonID.startsWith("c") || buttonID.startsWith("s") || buttonID.contains("ezvz")) {
+            return
+        }
 
-        if (!gCodeGeneratorManager.hasMember(clicker))  {
+        if (!gCodeGeneratorManager.hasMember(clicker)) {
             event.reply("You cannot click the buttons if you are not the owner of the execution.").queue()
             return
         }
@@ -58,11 +60,36 @@ class GCodeGeneratorButtonEvent: ListenerAdapter() {
 
             val current = Point(lastPair.second.x, lastPair.second.y)
             embed.addField("Printhead Position", "Current position: X:${current.x} Y:${current.y}", true)
-            embed.addField("Movement Pattern", gCodeGeneratorManager.getDirections(clicker).joinToString { pair -> Emoji.fromUnicode(pair.first.unicode).name}, false)
+            embed.addField(
+                "Movement Pattern",
+                gCodeGeneratorManager.getDirections(clicker)
+                    .joinToString { pair -> Emoji.fromUnicode(pair.first.unicode).name },
+                false,
+            )
 
             val message = event.channel.retrieveMessageById(gCodeGeneratorManager.getInteractionID(clicker)).complete()
-            val validDirections = availableDirections(current, gCodeGeneratorManager.machineMin(clicker), gCodeGeneratorManager.machineMax(clicker))
-            event.editMessageEmbeds(embed.build()).setActionRows( listOf(ActionRow.of(validDirections.map { d -> Button.secondary(d.name, Emoji.fromUnicode(d.unicode))}), ActionRow.of(Button.primary("submit", "Submit"),Button.danger("delete", "Delete last movement"), Button.danger("cancel", "Cancel")) )).queue()
+            val validDirections = availableDirections(
+                current,
+                gCodeGeneratorManager.machineMin(clicker),
+                gCodeGeneratorManager.machineMax(clicker),
+            )
+            event.editMessageEmbeds(embed.build()).setComponents(
+                listOf(
+                    ActionRow.of(
+                        validDirections.map { d ->
+                            Button.secondary(
+                                d.name,
+                                Emoji.fromUnicode(d.unicode),
+                            )
+                        },
+                    ),
+                    ActionRow.of(
+                        Button.primary("submit", "Submit"),
+                        Button.danger("delete", "Delete last movement"),
+                        Button.danger("cancel", "Cancel"),
+                    ),
+                ),
+            ).queue()
             return
         }
 
@@ -89,10 +116,18 @@ class GCodeGeneratorButtonEvent: ListenerAdapter() {
                     val direction = directionPair.first
                     val to = directionPair.second
 
-                    if (direction == Direction.HOME)
+                    if (direction == Direction.HOME) {
                         continue
+                    }
 
-                    writer.println(direction.asGcode(to, gCodeGeneratorManager.machineMin(clicker), gCodeGeneratorManager.machineMax(clicker), speed))
+                    writer.println(
+                        direction.asGcode(
+                            to,
+                            gCodeGeneratorManager.machineMin(clicker),
+                            gCodeGeneratorManager.machineMax(clicker),
+                            speed,
+                        ),
+                    )
                 }
 
                 speed += dat.speedIncrease
@@ -102,10 +137,14 @@ class GCodeGeneratorButtonEvent: ListenerAdapter() {
             val embedBuilder = EmbedBuilder()
             embedBuilder.setTitle("Finished")
             embedBuilder.setColor(Color.GREEN)
-            embed.addField("Movement Pattern", gCodeGeneratorManager.getDirections(clicker).joinToString { pair -> Emoji.fromUnicode(pair.first.unicode).name}, false)
+            embed.addField(
+                "Movement Pattern",
+                gCodeGeneratorManager.getDirections(clicker)
+                    .joinToString { pair -> Emoji.fromUnicode(pair.first.unicode).name },
+                false,
+            )
 
-
-            event.hook.editOriginalEmbeds(embedBuilder.build()).setActionRows().addFile(file).queue()
+            event.hook.editOriginalEmbeds(embedBuilder.build()).setFiles(FileUpload.fromData(file)).queue()
 
             gCodeGeneratorManager.removeMember(clicker)
 
@@ -127,20 +166,48 @@ class GCodeGeneratorButtonEvent: ListenerAdapter() {
             return
         }
 
-
-        val direction = Direction.values().first { v -> v.name == buttonID}
+        val direction = Direction.values().first { v -> v.name == buttonID }
         var current = Point(x, y)
-        current = direction.change(current, gCodeGeneratorManager.machineMin(clicker), gCodeGeneratorManager.machineMax(clicker))
+        current = direction.change(
+            current,
+            gCodeGeneratorManager.machineMin(clicker),
+            gCodeGeneratorManager.machineMax(clicker),
+        )
 
         embed.addField("Printhead Position", "Current position: X:${current.x} Y:${current.y}", true)
 
         gCodeGeneratorManager.addDirection(direction, clicker, current)
-        embed.addField("Movement Pattern", gCodeGeneratorManager.getDirections(clicker).joinToString { pair -> Emoji.fromUnicode(pair.first.unicode).name}, false)
+        embed.addField(
+            "Movement Pattern",
+            gCodeGeneratorManager.getDirections(clicker)
+                .joinToString { pair -> Emoji.fromUnicode(pair.first.unicode).name },
+            false,
+        )
 
         val message = event.channel.retrieveMessageById(gCodeGeneratorManager.getInteractionID(clicker)).complete()
-        val validDirections = availableDirections(current, gCodeGeneratorManager.machineMin(clicker), gCodeGeneratorManager.machineMax(clicker))
+        val validDirections = availableDirections(
+            current,
+            gCodeGeneratorManager.machineMin(clicker),
+            gCodeGeneratorManager.machineMax(clicker),
+        )
 
-        event.editMessageEmbeds(embed.build()).setActionRows( listOf(ActionRow.of(validDirections.map { d -> Button.secondary(d.name, Emoji.fromUnicode(d.unicode))}), ActionRow.of(Button.primary("submit", "Submit"),Button.danger("delete", "Delete last movement"), Button.danger("cancel", "Cancel")) )).queue()
+        event.editMessageEmbeds(embed.build()).setComponents(
+            listOf(
+                ActionRow.of(
+                    validDirections.map { d ->
+                        Button.secondary(
+                            d.name,
+                            Emoji.fromUnicode(d.unicode),
+                        )
+                    },
+                ),
+                ActionRow.of(
+                    Button.primary("submit", "Submit"),
+                    Button.danger("delete", "Delete last movement"),
+                    Button.danger("cancel", "Cancel"),
+                ),
+            ),
+        ).queue()
     }
 
     private fun availableDirections(current: Point, min: Point, max: Point): List<Direction> {

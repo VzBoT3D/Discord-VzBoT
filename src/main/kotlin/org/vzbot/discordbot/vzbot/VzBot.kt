@@ -1,22 +1,28 @@
 package org.vzbot.discordbot.vzbot
 
+import com.zellerfeld.zellerbotapi.ZellerBot
+import com.zellerfeld.zellerbotapi.app.Application
+import com.zellerfeld.zellerbotapi.io.database.DataBaseHelper
+import com.zellerfeld.zellerbotapi.io.database.DatabaseConfig
+import com.zellerfeld.zellerbotapi.util.Token
+import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.Guild
 import org.vzbot.discordbot.command.CommandManager
 import org.vzbot.discordbot.command.implementations.*
 import org.vzbot.discordbot.db.DatabaseConnector
-import org.vzbot.discordbot.filemanagers.implementations.ConfigFileManager
-import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.JDABuilder
-import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.requests.GatewayIntent
 import org.vzbot.discordbot.events.*
+import org.vzbot.discordbot.filemanagers.implementations.ConfigFileManager
 import org.vzbot.discordbot.filemanagers.implementations.FlowChartFileManager
 import org.vzbot.discordbot.util.ChannelLogger
 import java.io.File
 
+const val VERSION = "1.0.4"
 
-const val VERSION = "1.0.3"
+class VzBot(bootLocation: String) : Application("VzBot", "org.vzbot") {
 
-class VzBot(bootLocation: String) {
+    override fun onShutdown() {
+        TODO("Not yet implemented")
+    }
 
     /**
      * Initialization of the VzBoT
@@ -32,27 +38,18 @@ class VzBot(bootLocation: String) {
 
         val token = configFileManager.getToken()
 
-
         databaseConnector = DatabaseConnector()
-        if (token.isEmpty())
+        if (token.isEmpty()) {
             error("Token must be filled")
-
-        try {
-            jda = JDABuilder.createDefault(token).enableIntents(GatewayIntent.MESSAGE_CONTENT).build()
-        }catch (e: Exception) {
-            error("Invalid token or connection")
         }
 
+        val discordToken = Token(token)
+        ZellerBot.startBot(discordToken, { }, { println(it) })
 
-        jda.addEventListener(BotReadyEvent())
-        jda.addEventListener(SlashCommandEvent())
-        jda.addEventListener(MessageSendEvent())
-        jda.addEventListener(MessageDeleteEvent())
-        jda.addEventListener(GCodeGeneratorButtonEvent())
-        jda.addEventListener(UserContextEvent())
-        jda.addEventListener(STLConfigEvents())
-        jda.addEventListener(STLFinderEvents())
+        ZellerBot.onReady { ready() }
+    }
 
+    private fun ready() {
         commandManager.addCommand(IOCommand())
         commandManager.addCommand(AccelCommand())
         commandManager.addCommand(StepsCommand())
@@ -64,8 +61,29 @@ class VzBot(bootLocation: String) {
         commandManager.addContextCommand(SerialContextCommand())
         commandManager.addCommand(STLConfigurationCommand())
         commandManager.addCommand(STLFinderCommand())
-    }
 
+        jda = ZellerBot.bot ?: error("Error while getting JDA from API")
+        ZellerBot.turnOnDebug()
+        ZellerBot.registerApplication(this)
+
+        val databaseConfig = DatabaseConfig(
+            configFileManager.getSQLUser(),
+            configFileManager.getSQLPassword(),
+            configFileManager.getSQLHost(),
+            configFileManager.getSQLDB(),
+            configFileManager.getSQLPort(),
+        )
+        DataBaseHelper.loadDatabase(databaseConfig)
+
+        jda.addEventListener(SlashCommandEvent())
+        jda.addEventListener(MessageSendEvent())
+        jda.addEventListener(GCodeGeneratorButtonEvent())
+        jda.addEventListener(UserContextEvent())
+        jda.addEventListener(STLConfigEvents())
+        jda.addEventListener(STLFinderEvents())
+
+        BotReady.onReady(jda)
+    }
 
     companion object {
         lateinit var tronxyDiscord: Guild
@@ -77,6 +95,4 @@ class VzBot(bootLocation: String) {
         lateinit var flowChartFileManager: FlowChartFileManager
         var commandManager = CommandManager()
     }
-
-
 }

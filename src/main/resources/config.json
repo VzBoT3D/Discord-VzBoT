@@ -2,17 +2,14 @@
   "token": "",
   "logChannel": "",
   "mediaOnlyChannels": [],
-
   "sql_user": "root",
   "sql_password": "",
   "sql_port": "3306",
   "sql_database": "VzBot",
   "sql_host": "localhost",
   "gitHub": "token",
-
   "submissionChannelVZ": "",
   "submissionChannelTronxy": "",
-
-  "serialAnnounceChannel": ""
-
+  "serialAnnounceChannel": "",
+  "application_category": ""
 }

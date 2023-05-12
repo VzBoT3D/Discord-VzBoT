@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
+import net.dv8tion.jda.api.utils.FileUpload
 import org.simpleyaml.configuration.file.YamlFile
 import org.vzbot.discordbot.LocationGetter
 import org.vzbot.discordbot.command.Command
@@ -16,13 +17,24 @@ import java.io.File
 import kotlin.reflect.full.createInstance
 import kotlin.reflect.full.createType
 
-private val importSubCommand = SubcommandData("import", "will import a file to a database table").addOption(OptionType.STRING, "file", "name of the file", true)
-private val exportSubCommand = SubcommandData("export", "will export a table into a file").addOption(OptionType.STRING, "table", "name of the table", true)
+private val importSubCommand = SubcommandData("import", "will import a file to a database table").addOption(
+    OptionType.STRING,
+    "file",
+    "name of the file",
+    true,
+)
+private val exportSubCommand = SubcommandData("export", "will export a table into a file").addOption(
+    OptionType.STRING,
+    "table",
+    "name of the table",
+    true,
+)
 private val commandData = Commands.slash("io", "Will execute operations on the given table or file.").addSubcommands(
-    importSubCommand, exportSubCommand)
+    importSubCommand,
+    exportSubCommand,
+)
 
-
-class IOCommand: Command("io", commandData, true) {
+class IOCommand : Command("io", commandData, true) {
     override fun execute(member: Member, event: SlashCommandInteractionEvent) {
         if (event.subcommandName == "import") {
             val fileName = event.getOption("file")!!.asString
@@ -49,8 +61,8 @@ class IOCommand: Command("io", commandData, true) {
             val clazz: Class<*>
 
             try {
-                 clazz = javaClass.classLoader.loadClass(yml.getString("class"))
-            }catch (e: ClassNotFoundException) {
+                clazz = javaClass.classLoader.loadClass(yml.getString("class"))
+            } catch (e: ClassNotFoundException) {
                 event.replyEmbeds(defaultEmbed(".yml unsupported class", Color.RED)).queue()
                 return
             }
@@ -72,12 +84,12 @@ class IOCommand: Command("io", commandData, true) {
                 return
             }
 
-
             for (i in 1 until yml.getKeys(false).size) {
                 yml.set("$i.id", i)
                 val success = obj.fromYML(yml.getConfigurationSection("$i"))
                 if (!success) {
-                    event.replyEmbeds(defaultEmbed("Error while convertig id: $i to database object", Color.RED)).queue()
+                    event.replyEmbeds(defaultEmbed("Error while convertig id: $i to database object", Color.RED))
+                        .queue()
                     return
                 }
                 obj.getDAO().create(obj)
@@ -88,7 +100,13 @@ class IOCommand: Command("io", commandData, true) {
             val clazzName = event.getOption("table")!!.asString
 
             if (!daoClassManager.hasClass(clazzName)) {
-                event.replyEmbeds(defaultEmbed("Invalid Table not found. Available Tables: ${daoClassManager.getAllClassNames().joinToString(",")}")).queue()
+                event.replyEmbeds(
+                    defaultEmbed(
+                        "Invalid Table not found. Available Tables: ${
+                            daoClassManager.getAllClassNames().joinToString(",")
+                        }",
+                    ),
+                ).queue()
                 return
             }
 
@@ -97,7 +115,6 @@ class IOCommand: Command("io", commandData, true) {
 
             val file = File("$clazzName.yml")
             val temp = YamlFile(file)
-
 
             if (!file.exists()) {
                 file.createNewFile()
@@ -115,9 +132,8 @@ class IOCommand: Command("io", commandData, true) {
             }
 
             temp.save(file)
-            event.replyEmbeds(defaultEmbed("Done!", Color.GREEN)).addFile(file).queue()
+            event.replyEmbeds(defaultEmbed("Done!", Color.GREEN)).addFiles(FileUpload.fromData(file)).queue()
             file.delete()
         }
     }
 }
-

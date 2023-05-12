@@ -4,12 +4,12 @@ import com.j256.ormlite.dao.Dao
 import com.j256.ormlite.jdbc.spring.DaoFactory
 import com.j256.ormlite.support.ConnectionSource
 import com.j256.ormlite.table.TableUtils
-import org.vzbot.discordbot.warnsystem.Registration
+import org.vzbot.discordbot.models.Registration
 
-class RegistrationDAO(private val connectionSource: ConnectionSource): DAO<Registration> {
+class RegistrationDAO(private val connectionSource: ConnectionSource) : DAO<Registration> {
 
-
-    private val registrationDAO: Dao<Registration, Long> = DaoFactory.createDao(connectionSource, Registration::class.java)
+    private val registrationDAO: Dao<Registration, Long> =
+        DaoFactory.createDao(connectionSource, Registration::class.java)
 
     override fun initTable() {
         TableUtils.createTableIfNotExists(connectionSource, Registration::class.java)
@@ -25,7 +25,7 @@ class RegistrationDAO(private val connectionSource: ConnectionSource): DAO<Regis
     }
 
     fun hasID(id: Long): Boolean {
-        return listAll().any {it.id == id}
+        return listAll().any { it.id == id }
     }
 
     fun update(registration: Registration) {
@@ -39,5 +39,4 @@ class RegistrationDAO(private val connectionSource: ConnectionSource): DAO<Regis
     override fun listAll(): List<Registration> {
         return registrationDAO.toList()
     }
-
 }

@@ -6,15 +6,16 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.vzbot.discordbot.command.Command
+import org.vzbot.discordbot.models.registrationDAO
 import org.vzbot.discordbot.util.defaultEmbed
 import org.vzbot.discordbot.vzbot.VzBot
-import org.vzbot.discordbot.warnsystem.registrationDAO
 import java.awt.Color
 import kotlin.math.roundToLong
 
-private val cmdData = Commands.slash("viewbuild", "view an official vzbuild").addOption(OptionType.NUMBER, "id", "Serial id of the build", true)
+private val cmdData = Commands.slash("viewbuild", "view an official vzbuild")
+    .addOption(OptionType.NUMBER, "id", "Serial id of the build", true)
 
-class ViewBuildCommand: Command("viewbuild", cmdData, false) {
+class ViewBuildCommand : Command("viewbuild", cmdData, false) {
 
     override fun execute(member: Member, event: SlashCommandInteractionEvent) {
         val id = event.getOption("id")!!.asString.toDoubleOrNull()
@@ -23,7 +24,6 @@ class ViewBuildCommand: Command("viewbuild", cmdData, false) {
             event.replyEmbeds(defaultEmbed("Given id is no long")).queue()
             return
         }
-
 
         val idLong = id.roundToLong()
 
@@ -42,7 +42,7 @@ class ViewBuildCommand: Command("viewbuild", cmdData, false) {
 
         embed.addField("Builder", builder.nickname ?: builder.effectiveName, true)
         embed.addField("Description", reg.description, true)
-        embed.addField("Media", reg.mediaURL,true)
+        embed.addField("Media", reg.mediaURL, true)
 
         event.replyEmbeds(embed.build()).queue()
     }

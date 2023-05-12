@@ -1,23 +1,23 @@
 package org.vzbot.discordbot.filemanagers.implementations
 
-import org.vzbot.discordbot.filemanagers.FileManager
-import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import org.json.JSONObject
+import org.vzbot.discordbot.filemanagers.FileManager
 import org.vzbot.discordbot.vzbot.VzBot
 import java.io.File
 import java.nio.file.Files
 
-class ConfigFileManager(private val location: File): FileManager {
+class ConfigFileManager(private val location: File) : FileManager {
 
     private lateinit var json: JSONObject
 
     override fun loadFile() {
-
         if (!location.exists()) {
             location.parentFile.mkdirs()
 
             try {
-                val inputStream = javaClass.classLoader.getResourceAsStream("config.json") ?: error("config.json could not be loaded")
+                val inputStream =
+                    javaClass.classLoader.getResourceAsStream("config.json") ?: error("config.json could not be loaded")
                 Files.copy(inputStream, location.toPath())
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -41,7 +41,8 @@ class ConfigFileManager(private val location: File): FileManager {
     }
 
     fun getChannels(): List<TextChannel> {
-        return json.getJSONArray("mediaOnlyChannels").map { VzBot.jda.getTextChannelById(it.toString()) ?: error("Channel in mediaBlocker not found: $it") }
+        return json.getJSONArray("mediaOnlyChannels")
+            .map { VzBot.jda.getTextChannelById(it.toString()) ?: error("Channel in mediaBlocker not found: $it") }
     }
 
     fun getLogChannelID(): String {
@@ -76,6 +77,10 @@ class ConfigFileManager(private val location: File): FileManager {
         return json.getString("sql_database")
     }
 
+    fun getApplicationCategory(): Long {
+        return json.getLong("application_category")
+    }
+
     fun getGitHubToken(): String {
         return json.getString("gitHub")
     }
@@ -83,5 +88,4 @@ class ConfigFileManager(private val location: File): FileManager {
     fun getSerialAnnouncementChannelID(): String {
         return json.getString("serialAnnounceChannel")
     }
-
 }

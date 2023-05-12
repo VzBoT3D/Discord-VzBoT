@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent
-import org.vzbot.discordbot.command.implementations.CreateSubmissionCommand
 import org.vzbot.discordbot.util.defaultEmbed
 import org.vzbot.discordbot.vzbot.VzBot
 import java.awt.Color
@@ -27,18 +26,12 @@ class CommandManager() {
     }
 
     fun registerCommandsOnDiscord() {
-        val commandsVZ = VzBot.discord.updateCommands()
         for (command in commands) {
-            commandsVZ.addCommands(command.commandData)
+            VzBot.discord.upsertCommand(command.commandData).queue()
         }
         for (contextCommand in contextCommands) {
-            commandsVZ.addCommands(contextCommand.cmd)
+            VzBot.discord.upsertCommand(contextCommand.cmd).queue()
         }
-        commandsVZ.queue()
-
-        val commandsTronxy = VzBot.tronxyDiscord.updateCommands()
-        commandsTronxy.addCommands(CreateSubmissionCommand().commandData)
-        commandsTronxy.queue()
     }
 
     fun handleInput(clicker: Member, clicked: Member, event: UserContextInteractionEvent) {
@@ -52,8 +45,9 @@ class CommandManager() {
     }
 
     fun handleInput(input: String, member: Member, event: SlashCommandInteractionEvent) {
-        if (input.isEmpty())
+        if (input.isEmpty()) {
             return
+        }
         val name = input.split(" ")[0]
 
         for (command in commands) {

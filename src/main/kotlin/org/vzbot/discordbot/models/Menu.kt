@@ -4,18 +4,19 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.interactions.components.ActionRow
-import net.dv8tion.jda.api.interactions.components.Modal
 import net.dv8tion.jda.api.interactions.components.buttons.Button
-import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
+import net.dv8tion.jda.api.interactions.modals.Modal
+import org.vzbot.discordbot.LocationGetter
 import org.vzbot.discordbot.util.defaultEmbed
 import org.vzbot.discordbot.vzbot.VzBot
 import java.awt.Color
 import java.io.File
+import java.nio.file.Files
 
 object Menu {
-
 
     fun newChartModal(): Modal {
         val name = TextInput.create("title", "Name", TextInputStyle.SHORT).build()
@@ -29,11 +30,11 @@ object Menu {
             defaultEmbed(
                 "Select from the menu below the chart you would like to edit",
                 Color.GREEN,
-                "Selection"
-            )
+                "Selection",
+            ),
         ).queue()
 
-        val menu = SelectMenu.create("chart_edit_menu")
+        val menu = StringSelectMenu.create("chart_edit_menu")
 
         for (chart in VzBot.flowChartFileManager.getFlowCharts()) {
             menu.addOption(chart.startPoint.title, chart.startPoint.title)
@@ -41,21 +42,24 @@ object Menu {
 
         msg.editMessageComponents(
             ActionRow.of(menu.build()),
-            ActionRow.of(Button.danger("c_cancel_edit_chart", "Cancel"))
+            ActionRow.of(Button.danger("c_cancel_edit_chart", "Cancel")),
         ).queue()
     }
 
     fun viewChartsMenu(msg: Message) {
-
         val embed = defaultEmbed("These are the currently existing charts: ", Color.ORANGE, "Charts")
         val builder = EmbedBuilder(embed)
 
         for (chart in VzBot.flowChartFileManager.getFlowCharts()) {
-            builder.addField(chart.startPoint.title, "Points: ${chart.getAllPoints().size} \n Metas: ${
-                chart.getAllPoints().sumOf { it.value.size }
-            } \n Attached files: ${
-                chart.getAllPoints().map { it.value }.sumOf { it.count { value -> value is STLMedia } }
-            }", true)
+            builder.addField(
+                chart.startPoint.title,
+                "Points: ${chart.getAllPoints().size} \n Metas: ${
+                    chart.getAllPoints().sumOf { it.value.size }
+                } \n Attached files: ${
+                    chart.getAllPoints().map { it.value }.sumOf { it.count { value -> value is STLMedia } }
+                }",
+                true,
+            )
         }
 
         msg.editMessageEmbeds(builder.build()).queue()
@@ -67,11 +71,11 @@ object Menu {
             defaultEmbed(
                 "Select from the menu below the chart you would like to delete",
                 Color.GREEN,
-                "Selection"
-            )
+                "Selection",
+            ),
         ).queue()
 
-        val menu = SelectMenu.create("chart_delete_menu")
+        val menu = StringSelectMenu.create("chart_delete_menu")
 
         for (chart in VzBot.flowChartFileManager.getFlowCharts()) {
             menu.addOption(chart.startPoint.title, chart.startPoint.title)
@@ -79,7 +83,7 @@ object Menu {
 
         msg.editMessageComponents(
             ActionRow.of(menu.build()),
-            ActionRow.of(Button.danger("c_cancel_edit_chart", "Cancel"))
+            ActionRow.of(Button.danger("c_cancel_edit_chart", "Cancel")),
         ).queue()
     }
 
@@ -104,16 +108,16 @@ object Menu {
                 Button.primary("c_meta_add_chart", "Link a different chart to this point"),
                 Button.primary("c_upload_meta", "Upload files to this point"),
                 Button.primary("c_edit_meta_dir", "Edit a certain meta"),
-                Button.danger("c_delete_meta", "Delete meta component")
+                Button.danger("c_delete_meta", "Delete meta component"),
             ),
-            ActionRow.of(Button.danger("c_cancel_meta", "Back"))
+            ActionRow.of(Button.danger("c_cancel_meta", "Back")),
         ).queue()
         msg.editMessageEmbeds(
             defaultEmbed(
                 "Select from the options below how you want to change this point",
                 Color.GREEN,
-                "Meta editor"
-            )
+                "Meta editor",
+            ),
         ).queue()
     }
 
@@ -122,11 +126,11 @@ object Menu {
             defaultEmbed(
                 "Select from the options which chart should be linked to this point",
                 Color.GREEN,
-                "Meta editor"
-            )
+                "Meta editor",
+            ),
         ).queue()
 
-        val menu = SelectMenu.create("select_link_chart")
+        val menu = StringSelectMenu.create("select_link_chart")
 
         for (flowchart in VzBot.flowChartFileManager.getFlowCharts()
             .filter { it.startPoint.title != chart.startPoint.title }) {
@@ -135,7 +139,7 @@ object Menu {
 
         msg.editMessageComponents(
             ActionRow.of(menu.build()),
-            ActionRow.of(Button.danger("c_cancel_meta_edit", "Cancel"))
+            ActionRow.of(Button.danger("c_cancel_meta_edit", "Cancel")),
         ).queue()
     }
 
@@ -152,7 +156,7 @@ object Menu {
     fun editMetaModel(meta: SavedMedia<*>): Modal {
         val name = TextInput.create("title", "Name", TextInputStyle.SHORT).build()
         val url = TextInput.create("url", "URL", TextInputStyle.PARAGRAPH).setPlaceholder(
-            if (meta.getMetaRaw().length > 99) meta.getMetaRaw().substring(0, 99) else meta.getMetaRaw()
+            if (meta.getMetaRaw().length > 99) meta.getMetaRaw().substring(0, 99) else meta.getMetaRaw(),
         ).build()
         val modal = Modal.create("c_edit_meta_modal+${meta.getTitle()}", "Edit a the ${meta.getTitle()} name and value")
 
@@ -161,7 +165,7 @@ object Menu {
     }
 
     fun editMetaSelectionMenu(point: Datapoint, msg: Message) {
-        val menu = SelectMenu.create("select_meta")
+        val menu = StringSelectMenu.create("select_meta")
 
         for (meta in point.value.filterIsInstance<StringMedia>()) {
             menu.addOption(meta.getTitle(), meta.getTitle())
@@ -170,12 +174,12 @@ object Menu {
         msg.editMessageEmbeds(defaultEmbed("Select the Meta from the list below you would like to edit")).queue()
         msg.editMessageComponents(
             ActionRow.of(menu.build()),
-            ActionRow.of(Button.danger("c_cancel_meta_edit", "Cancel"))
+            ActionRow.of(Button.danger("c_cancel_meta_edit", "Cancel")),
         ).queue()
     }
 
     fun deleteMetaSelectionMenu(point: Datapoint, msg: Message) {
-        val menu = SelectMenu.create("delete_meta")
+        val menu = StringSelectMenu.create("delete_meta")
 
         for (meta in point.value) {
             menu.addOption(meta.getTitle(), meta.getTitle())
@@ -184,14 +188,14 @@ object Menu {
         msg.editMessageEmbeds(defaultEmbed("Select the Meta from the list below you would like to delete.")).queue()
         msg.editMessageComponents(
             ActionRow.of(menu.build()),
-            ActionRow.of(Button.danger("c_cancel_meta_edit", "Cancel"))
+            ActionRow.of(Button.danger("c_cancel_meta_edit", "Cancel")),
         ).queue()
     }
 
     fun pointMenu(point: Datapoint, msg: Message, chart: Flowchart) {
         val embed = configPointEmbed(point)
 
-        val menu = SelectMenu.create("select_point")
+        val menu = StringSelectMenu.create("select_point")
 
         if (chart.getAllPoints().size > 1) {
             for (differentPoint in chart.getAllPoints()) {
@@ -208,18 +212,18 @@ object Menu {
                 ActionRow.of(
                     Button.primary("c_edit_meta", "Edit the Meta values"),
                     Button.primary("c_change_name", "Change point name"),
-                    Button.danger("c_delete_point", "Delete point below")
+                    Button.danger("c_delete_point", "Delete point below"),
                 ),
-                ActionRow.of(Button.secondary("c_chart_done", "Done"), Button.danger("c_cancel_chart", "Cancel"))
+                ActionRow.of(Button.secondary("c_chart_done", "Done"), Button.danger("c_cancel_chart", "Cancel")),
             ).queue()
         } else {
             msg.editMessageComponents(
                 ActionRow.of(Button.primary("c_create_point", "Create a new point")),
                 ActionRow.of(
                     Button.primary("c_edit_meta", "Edit the Meta values"),
-                    Button.primary("c_change_name", "Change point name")
+                    Button.primary("c_change_name", "Change point name"),
                 ),
-                ActionRow.of(Button.secondary("c_chart_done", "Done"), Button.danger("c_cancel_chart", "Cancel"))
+                ActionRow.of(Button.secondary("c_chart_done", "Done"), Button.danger("c_cancel_chart", "Cancel")),
             ).queue()
         }
     }
@@ -228,7 +232,7 @@ object Menu {
         msg.editMessageEmbeds(defaultEmbed("Select the point you want to delete from the list below. This will also delete all points, the deleted point is pointing to."))
             .queue()
 
-        val menu = SelectMenu.create("c_d_p_menu")
+        val menu = StringSelectMenu.create("c_d_p_menu")
 
         for (point in nextPoints) {
             menu.addOption(point.title, point.title)
@@ -249,20 +253,34 @@ object Menu {
         val embed = defaultEmbed(
             "Use the buttons below to access the STL Configuration Tool",
             Color.ORANGE,
-            "STL-Finder Configurator"
+            "STL-Finder Configurator",
         )
 
-        msg.editMessageEmbeds(embed).queue()
+        val builder = EmbedBuilder(embed)
+
+        val data = File(LocationGetter().getLocation().absolutePath + "/VZBoT/charts/data/")
+        val fileSize = Files.size(data.toPath())
+
+        val fileSizeMb = fileSize / 1024.0 / 1024.0
+
+        val totalSpace = data.totalSpace
+        val totalSpaceMb = totalSpace / 1024.0 / 1024.0
+
+        val percent = fileSizeMb / totalSpaceMb * 100
+
+        builder.addField("Storage uses", "$fileSizeMb/$totalSpaceMb **-**  $percent%", true)
+
+        msg.editMessageEmbeds(builder.build()).queue()
         msg.editMessageComponents(
             ActionRow.of(
                 Button.primary("c_new_chart", "Create new chart"),
-                Button.primary("c_view_charts", "View existing charts")
+                Button.primary("c_view_charts", "View existing charts"),
             ),
             ActionRow.of(
                 Button.primary("c_edit_chart", "Edit an existing chart"),
-                Button.primary("c_delete_chart", "Delete a existing chart")
+                Button.primary("c_delete_chart", "Delete a existing chart"),
             ),
-            ActionRow.of(Button.danger("c_cancel", "Cancel"))
+            ActionRow.of(Button.danger("c_cancel", "Cancel")),
         ).queue()
     }
 
@@ -272,13 +290,12 @@ object Menu {
         msg.editMessageComponents(
             ActionRow.of(
                 Button.primary("c_meta_done", "Done"),
-                Button.danger("c_cancel_meta", "Cancel")
-            )
+                Button.danger("c_cancel_meta", "Cancel"),
+            ),
         ).queue()
     }
 
     private fun configPointEmbed(currentPoint: Datapoint): MessageEmbed {
-
         val embed = EmbedBuilder()
         embed.setTitle("Configurator")
 
@@ -286,7 +303,7 @@ object Menu {
         embed.addField(
             "Meta",
             currentPoint.value.joinToString(separator = "") { run { if (it is StringMedia) "URL -> ${it.getTitle()}" else if (it is STLMedia) "File -> ${it.getTitle()}" else "Chart -> ${it.getTitle()}" } + "\n" },
-            false
+            false,
         )
 
         embed.setColor(Color.GREEN)
