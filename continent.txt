@@ -1,0 +1,6 @@
+    EUROPE("Europe", "EU"),
+    ASIA("Asia", "AS"),
+    AFRICA("Africa", "AF"),
+    NORTH_AMERICA("North America", "NA"),
+    SOUTH_AMERICA("South America", "SA"),
+    AUSTRALIA("Australia", "OC");
