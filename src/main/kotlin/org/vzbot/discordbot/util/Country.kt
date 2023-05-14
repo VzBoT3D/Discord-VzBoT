@@ -202,5 +202,22 @@ enum class Country(val code: String, val countryName: String) {
     VIETNAM("VN", "Vietnam"),
     YEMEN("YE", "Yemen"),
     ZAMBIA("ZM", "Zambia"),
-    ZIMBABWE("ZW", "Zimbabwe"),
+    ZIMBABWE("ZW", "Zimbabwe");
+
+    companion object {
+        fun hasCountry(country: String): Boolean {
+            if (country == "N/A") return false
+            return values().any { it.code.uppercase() == country.uppercase() } || values().any { it.countryName.uppercase() == country.uppercase() }
+        }
+
+        fun getCountry(country: String): Country {
+            return values().firstOrNull { it.code.uppercase() == country.uppercase() } ?: values().firstOrNull { it.countryName.uppercase() == country.uppercase() } ?: valueOf(country)
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (other == null) return false
+            return hasCountry(other.toString().uppercase())
+        }
+    }
+
 }

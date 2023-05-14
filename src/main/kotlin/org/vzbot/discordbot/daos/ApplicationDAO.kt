@@ -2,6 +2,7 @@ package org.vzbot.discordbot.daos
 
 import com.zellerfeld.zellerbotapi.io.database.EntityDAO
 import org.vzbot.discordbot.models.Application
+import org.vzbot.discordbot.models.ApplicationStatus
 
 /**
  *
@@ -28,5 +29,10 @@ object ApplicationDAO : EntityDAO<Application, Long>(Application::class.java) {
 
     fun hasApplied(memberID: Long): Boolean {
         return dao.queryForFieldValues(mapOf(Pair("applicant", memberID))).size > 0
+    }
+
+    fun hasBeenAccepted(memberID: Long): Boolean {
+        if (!hasApplied(memberID)) return false
+        return getApplicationFrom(memberID).status == ApplicationStatus.ACCEPTED
     }
 }

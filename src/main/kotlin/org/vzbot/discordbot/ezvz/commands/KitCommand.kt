@@ -44,7 +44,8 @@ class KitCommand : DiscordCommand() {
 
             val kitDescription = description
             val kitURL = url
-            val kit = EzVzKit().apply { this.name = name; this.description = kitDescription; this.url = kitURL }
+            val kitName = name
+            val kit = EzVzKit().apply { this.name = kitName; this.description = kitDescription; this.url = kitURL }
 
             KitDAO.add(kit)
             actionSender.respondText("You have created the kit", userOnly = true)

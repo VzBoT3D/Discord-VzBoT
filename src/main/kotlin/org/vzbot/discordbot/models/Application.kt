@@ -2,6 +2,7 @@ package org.vzbot.discordbot.models
 
 import com.j256.ormlite.field.DatabaseField
 import com.j256.ormlite.table.DatabaseTable
+import org.vzbot.discordbot.util.Continent
 import org.vzbot.discordbot.util.Country
 
 /**
@@ -19,7 +20,7 @@ class Application {
     var status: ApplicationStatus = ApplicationStatus.PENDING
 
     @DatabaseField
-    var continent: String = "N/A"
+    var continent: Continent = Continent.UNKNOWN
 
     @DatabaseField
     var textChannelID: Long = 0

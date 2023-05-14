@@ -11,5 +11,15 @@
   "submissionChannelVZ": "",
   "submissionChannelTronxy": "",
   "serialAnnounceChannel": "",
-  "application_category": ""
+  "application_category": "",
+  "order_category": "",
+  "order_notification_channel" :"",
+  "printerRoleEU": "",
+  "printerRoleAF": "",
+  "printerRoleAS": "",
+  "printerRoleNA": "",
+  "printerRoleSA": "",
+  "printerRoleOC": ""
+
+
 }

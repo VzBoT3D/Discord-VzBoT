@@ -12,6 +12,7 @@ import org.vzbot.discordbot.command.implementations.*
 import org.vzbot.discordbot.db.DatabaseConnector
 import org.vzbot.discordbot.events.*
 import org.vzbot.discordbot.filemanagers.implementations.ConfigFileManager
+import org.vzbot.discordbot.filemanagers.implementations.EzVzFileManager
 import org.vzbot.discordbot.filemanagers.implementations.FlowChartFileManager
 import org.vzbot.discordbot.util.ChannelLogger
 import java.io.File
@@ -35,6 +36,9 @@ class VzBot(bootLocation: String) : Application("VzBot", "org.vzbot") {
 
         flowChartFileManager = FlowChartFileManager(File("$bootLocation/VZBoT/charts/charts.yml"))
         flowChartFileManager.loadFile()
+
+        ezVzFileManager = EzVzFileManager(File("$bootLocation/VZBoT/ezvz-data.yml"))
+        ezVzFileManager.loadFile()
 
         val token = configFileManager.getToken()
 
@@ -93,6 +97,7 @@ class VzBot(bootLocation: String) : Application("VzBot", "org.vzbot") {
         lateinit var channelLogger: ChannelLogger
         lateinit var databaseConnector: DatabaseConnector
         lateinit var flowChartFileManager: FlowChartFileManager
+        lateinit var ezVzFileManager: EzVzFileManager
         var commandManager = CommandManager()
     }
 }

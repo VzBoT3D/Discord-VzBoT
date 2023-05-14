@@ -81,6 +81,14 @@ class ConfigFileManager(private val location: File) : FileManager {
         return json.getLong("application_category")
     }
 
+    fun getOrdersCategory(): Long {
+        return json.getLong("order_category")
+    }
+
+    fun getOrderNotificationChannel(): Long {
+        return json.getLong("order_notification_channel")
+    }
+
     fun getGitHubToken(): String {
         return json.getString("gitHub")
     }

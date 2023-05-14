@@ -326,6 +326,7 @@ class STLConfigEvents : ListenerAdapter() {
         val member = event.member!!
 
         if (menuID.isUUID()) return
+        if (menuID.contains("ezvz")) return
 
         if (!STLConfigurationManager.isConfiguring(
                 member,

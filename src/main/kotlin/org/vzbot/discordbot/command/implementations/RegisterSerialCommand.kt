@@ -57,6 +57,14 @@ class RegisterSerialCommand : Command("register", commandData, true) {
         returnEmbed.setTitle("Success")
         returnEmbed.setColor(Color.GREEN)
 
+        if (registration.description.length > 1023) {
+            return event.reply("Description is too long.").queue()
+        }
+
+        if (registration.mediaURL.length > 1023) {
+            return event.reply("Media is too long.").queue()
+        }
+
         returnEmbed.addField("User", user.asMention, true)
         returnEmbed.addField("ID", registration.id.toString(), true)
         returnEmbed.addField("Description", registration.description, true)

@@ -26,7 +26,7 @@ object BotReady {
             return
         }
         VzBot.channelLogger.sendSuccess("Bot started\nDatabase connection: **$test**")
-        VzBot.commandManager.registerCommandsOnDiscord()
+        //VzBot.commandManager.registerCommandsOnDiscord()
 
         RegistrationDAO(VzBot.databaseConnector.connectionSourced()).initTable()
         SubmissionDAO(VzBot.databaseConnector.connectionSourced()).initTable()

@@ -17,9 +17,14 @@ import net.dv8tion.jda.api.interactions.components.text.TextInput
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle
 import org.vzbot.discordbot.command.isModerator
 import org.vzbot.discordbot.daos.ApplicationDAO
+import org.vzbot.discordbot.daos.OrderDAO
+import org.vzbot.discordbot.daos.StatsDAO
 import org.vzbot.discordbot.models.Application
 import org.vzbot.discordbot.models.ApplicationStatus
+import org.vzbot.discordbot.models.EzVzStats
+import org.vzbot.discordbot.util.Continent
 import org.vzbot.discordbot.util.Country
+import org.vzbot.discordbot.util.OrderState
 import org.vzbot.discordbot.util.defaultEmbed
 import org.vzbot.discordbot.vzbot.VzBot
 import java.awt.Color
@@ -62,8 +67,23 @@ class ApplyButton(discordButton: DiscordButton = DiscordButton()) :
     PermanentDiscordButton("ezvz_apply", discordButton) {
 
     override fun execute(actionSender: ActionSender, hook: Message) {
+        if (!VzBot.ezVzFileManager.getEzVzStatus()) {
+            actionSender.respondText("The EzVz program is currently out of order!", true)
+            return
+        }
+
+        if (VzBot.ezVzFileManager.isBanned(actionSender.getMember())) {
+            actionSender.respondText("You are not eligible to join the EzVz program", true)
+            return
+        }
+
         if (ApplicationDAO.hasApplied(actionSender.getMember().idLong)) {
             actionSender.respondText("You have already applied to the program", userOnly = true)
+            return
+        }
+
+        if (ApplicationDAO.hasBeenAccepted(actionSender.getMember().idLong)) {
+            actionSender.respondText("You are already in the program", userOnly = true)
             return
         }
 
@@ -95,7 +115,20 @@ class ApplyButton(discordButton: DiscordButton = DiscordButton()) :
 
                 val filamentsInput = values["filaments"]!!.asString
 
-                if (printersInput < 1) return@run run { sender.respondText("You must have at least 1 printer to print for the EzVz Program") }
+                if (printersInput < 1) return@run run { sender.respondText("You must have at least 1 printer to print for the EzVz Program", userOnly = true) }
+
+                if (!Country.hasCountry(countryInput)) {
+                    sender.respondText("The country you provided is not supported. A full list can be found here: $COUNTRIES_URL", userOnly = true)
+                    return@run
+                }
+
+                if (!Continent.isContinent(continentInput)) {
+                    sender.respondText(
+                        "The continent you provided is not supported. A full list can be found here: $CONTINENTS_URL",
+                        userOnly = true
+                    )
+                    return@run
+                }
 
                 val category = VzBot.discord.getCategoryById(VzBot.configFileManager.getApplicationCategory())
                 val textChannel =
@@ -106,21 +139,10 @@ class ApplyButton(discordButton: DiscordButton = DiscordButton()) :
                 textChannel.upsertPermissionOverride(everyoneRole).deny(Permission.VIEW_CHANNEL).queue()
                 textChannel.upsertPermissionOverride(actionSender.getMember()).grant(Permission.VIEW_CHANNEL).queue()
 
-                if (Country.values().map { it.countryName }.none { it == countryInput }) {
-                    sender.respondText("The country you provided is not supported", userOnly = true)
-                    return@run
-                }
-
-                if (Country.values().map { it.code }.none { it == countryInput }) {
-                    sender.respondText("The country you provided is not supported", userOnly = true)
-                    return@run
-                }
-
                 val application = Application().apply {
                     applicant = sender.getMember().idLong
-                    this.country = Country.values().firstOrNull { it.countryName == countryInput } ?: Country.values()
-                        .first { it.code == countryInput }
-                    this.continent = continentInput
+                    this.country = Country.getCountry(countryInput)
+                    this.continent = Continent.getContinent(continentInput)
                     this.printers = printersInput
                     this.textChannelID = textChannel.idLong
                     this.filaments = filamentsInput
@@ -140,7 +162,9 @@ class ApplyButton(discordButton: DiscordButton = DiscordButton()) :
                 applicationInfoEmbed.addField("Filaments", filamentsInput, false)
 
                 textChannel.sendMessageEmbeds(applicationInfoEmbed.build())
-                    .addActionRow(DeclineApplication(), AcceptApplication()).queue()
+                    .addActionRow(DeclineApplication(), AcceptApplication()).queue {
+                        textChannel.pinMessageById(it.id).queue()
+                    }
 
                 val infoEmbed = defaultEmbed(
                     "Welcome to your application ${actionSender.getMember().asMention}." +
@@ -234,6 +258,11 @@ class AcceptApplication(
 
         val application = ApplicationDAO.getApplicationFromTextChannel(channelID)
 
+        if (application.status != ApplicationStatus.PENDING) {
+            actionSender.respondText(userOnly = true, text = "This application has already been processed")
+            return
+        }
+
         val applicantID = application.applicant
         val user = VzBot.discord.retrieveMemberById(applicantID).complete()
 
@@ -253,6 +282,20 @@ class AcceptApplication(
                 Color.GREEN,
                 "Accepted",
             )
+
+        val stats = EzVzStats().apply {
+            this.member = applicantID
+        }
+
+        val continentRole = application.continent.getRole()
+        VzBot.discord.addRoleToMember(user, continentRole).queue()
+
+
+        if (StatsDAO.has(stats.member)) {
+            StatsDAO.dao.update(stats)
+        } else {
+            StatsDAO.add(stats)
+        }
 
         actionSender.respondText("You have accepted this application.", userOnly = true)
         hook.channel.sendMessageEmbeds(acceptedEmbed).addActionRow(DeleteApplication()).queue()
@@ -275,9 +318,6 @@ class DeleteApplication(
             actionSender.respondText("There was an error while fetching this application", userOnly = true)
             return
         }
-
-        val application = ApplicationDAO.getApplicationFromTextChannel(channelID)
-        ApplicationDAO.remove(application)
 
         actionSender.respondText("This channel will delete itself in 10 seconds")
         hook.channel.delete().queueAfter(10, TimeUnit.SECONDS)
