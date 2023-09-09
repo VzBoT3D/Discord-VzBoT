@@ -35,12 +35,12 @@ import java.util.concurrent.TimeUnit
  * @version 1.0
  * @author Devin Fritz
  */
-@DCommand("sendapplypanel", "Creates a application panel for the ezvz in this channel")
+@DCommand("sendapplypanel", "Creates an EzVz application panel (embed) in the current channel")
 class EzVzPanelCommand : DiscordCommand() {
 
     override fun execute(actionSender: ActionSender) {
         if (!actionSender.getMember().isModerator()) {
-            actionSender.respondText("You're lacking the permission to execute this command", userOnly = true)
+            actionSender.respondText("You lack the required permissions to perform this action." + "\n" + "(not a moderator)", userOnly = true)
             return
         }
 
@@ -78,23 +78,22 @@ class ApplyButton(discordButton: DiscordButton = DiscordButton()) :
         }
 
         if (ApplicationDAO.hasApplied(actionSender.getMember().idLong)) {
-            actionSender.respondText("You have already applied to the program", userOnly = true)
+            actionSender.respondText("You have already applied to the EzVz program", userOnly = true)
             return
         }
 
         if (ApplicationDAO.hasBeenAccepted(actionSender.getMember().idLong)) {
-            actionSender.respondText("You are already in the program", userOnly = true)
+            actionSender.respondText("You are already a member of the EzVz program", userOnly = true)
             return
         }
 
-        val country =
-            ActionRow.of(
-                TextInput.create("country", "Country", TextInputStyle.SHORT)
-                    .setPlaceholder("From which country are you?").build(),
-            )
+        val country = ActionRow.of(
+            TextInput.create("country", "Country", TextInputStyle.SHORT)
+                .setPlaceholder("Which country are you located in?").build(),
+        )
         val continent = ActionRow.of(
             TextInput.create("continent", "Continent", TextInputStyle.SHORT)
-                .setPlaceholder("From which continent are you").build(),
+                .setPlaceholder("Which continent are you located on?").build(),
         )
         val printers = ActionRow.of(
             TextInput.create("printers", "Printers", TextInputStyle.SHORT)
@@ -103,10 +102,10 @@ class ApplyButton(discordButton: DiscordButton = DiscordButton()) :
 
         val filaments = ActionRow.of(
             TextInput.create("filaments", "Filaments", TextInputStyle.SHORT)
-                .setPlaceholder("Whats filaments are you capable of printing?").build(),
+                .setPlaceholder("What filaments are you capable of printing?").build(),
         )
 
-        val modal = DiscordModal("EzVz Application", { sender, _, values ->
+        val modal = DiscordModal("EzVz Provider Application", { sender, _, values ->
             run {
                 val countryInput = values["country"]!!.asString
                 val continentInput = values["continent"]!!.asString
@@ -152,7 +151,7 @@ class ApplyButton(discordButton: DiscordButton = DiscordButton()) :
 
                 sender.respondText(
                     userOnly = true,
-                    text = "Your application has been created in ${textChannel.asMention}",
+                    text = "Your application has been submitted in ${textChannel.asMention}",
                 )
 
                 val applicationInfoEmbed = EmbedBuilder(defaultEmbed("Information about this application"))
@@ -167,8 +166,11 @@ class ApplyButton(discordButton: DiscordButton = DiscordButton()) :
                     }
 
                 val infoEmbed = defaultEmbed(
-                    "Welcome to your application ${actionSender.getMember().asMention}." +
-                        " Please follow the rules of the application here. To begin: Send pictures of all 6 Sides of the VzCube in here.",
+                    "Welcome to your EzVz Provider application, ${actionSender.getMember().asMention}!" + 
+                    "\n\n" + 
+                    "Please follow the rules of the application here." +
+                    "\n" + 
+                    "To start off, please send pictures of all 6 sides of the requested printed VzCube in here.",
                     Color.YELLOW,
                     "EzVz Application",
                 )
@@ -192,7 +194,7 @@ class DeclineApplication(
     PermanentDiscordButton("ezvz_accept", discordButton) {
     override fun execute(actionSender: ActionSender, hook: Message) {
         if (!actionSender.getMember().isModerator()) {
-            actionSender.respondText("You're missing the permissions to do this.", userOnly = true)
+            actionSender.respondText("You lack the required permissions to perform this action." + "\n" + "(not a moderator)", userOnly = true)
             return
         }
 
@@ -205,7 +207,7 @@ class DeclineApplication(
         val application = ApplicationDAO.getApplicationFromTextChannel(channelID)
 
         if (application.status != ApplicationStatus.PENDING) {
-            actionSender.respondText(userOnly = true, text = "This application has already been processed")
+            actionSender.respondText(userOnly = true, text = "This application has already been processed!")
             return
         }
 
@@ -213,7 +215,7 @@ class DeclineApplication(
         val user = VzBot.discord.retrieveMemberById(applicantID).complete()
 
         if (user == null) {
-            actionSender.respondText("The user has left the server. This application will be deleted in 10 seconds")
+            actionSender.respondText("The user cannot be found or has left the server. This application will be deleted in 10 seconds")
             ApplicationDAO.remove(application)
             hook.channel.delete().queueAfter(10, TimeUnit.SECONDS)
             return
@@ -224,7 +226,9 @@ class DeclineApplication(
 
         val declinedEmbed =
             defaultEmbed(
-                "Unfortunately your application has been declined ${user.asMention}. You can delete this channel by pressing the delete button below.",
+                "${user.asMention}," + "\n" + 
+                "Unfortunately, your EzVz Providers Application was denied." + "\n" + 
+                "You can delete this channel with the delete button below.",
                 Color.RED,
                 "Declined",
             )
@@ -245,7 +249,7 @@ class AcceptApplication(
     PermanentDiscordButton("ezvz_decline", discordButton) {
     override fun execute(actionSender: ActionSender, hook: Message) {
         if (!actionSender.getMember().isModerator()) {
-            actionSender.respondText("You're missing the permissions to do this.", userOnly = true)
+            actionSender.respondText("You lack the required permissions to perform this action." + "\n" + "(not a moderator)", userOnly = true)
             return
         }
 
@@ -267,7 +271,7 @@ class AcceptApplication(
         val user = VzBot.discord.retrieveMemberById(applicantID).complete()
 
         if (user == null) {
-            actionSender.respondText("The user has left the server. This application will be deleted in 10 seconds")
+            actionSender.respondText("The user has left the server. This application will be closed in 10 seconds")
             ApplicationDAO.remove(application)
             hook.channel.delete().queueAfter(10, TimeUnit.SECONDS)
             return
@@ -278,7 +282,9 @@ class AcceptApplication(
 
         val acceptedEmbed =
             defaultEmbed(
-                "Congratulation your application has been accepted ${user.asMention}. You are now able to see all the content belonging to the EzVz Program.",
+                "Congratulations, ${user.asMention}!" + "\n" + 
+                "Your EzVz Providers Application has been accepted!" + "\n" + 
+                "You can now access the EzVz Program. Click on an order channel to get started ",
                 Color.GREEN,
                 "Accepted",
             )
@@ -319,7 +325,7 @@ class DeleteApplication(
             return
         }
 
-        actionSender.respondText("This channel will delete itself in 10 seconds")
+        actionSender.respondText("This channel will be closed in 10 seconds")
         hook.channel.delete().queueAfter(10, TimeUnit.SECONDS)
     }
 }

@@ -20,11 +20,11 @@ import kotlin.math.max
 import kotlin.math.round
 import kotlin.math.sqrt
 
-private val cmd = Commands.slash("accel", "will calculate a acceleration diagram and display it")
-    .addOption(OptionType.NUMBER, "acceleration", "The acceleration of the movement in mm/s²", true)
-    .addOption(OptionType.NUMBER, "desired-speed", "The speed it should reach in mm/s", true)
-    .addOption(OptionType.NUMBER, "mass", "mass of the moving gantry im g", true)
-    .addOption(OptionType.NUMBER, "movement-length", "The size of the movement in mm", true)
+private val cmd = Commands.slash("accel", "will calculate an acceleration diagram and display it")
+    .addOption(OptionType.NUMBER, "acceleration", "The acceleration of the movement, in mm/s²", true)
+    .addOption(OptionType.NUMBER, "desired-speed", "The desired movement speed, in mm/s", true)
+    .addOption(OptionType.NUMBER, "mass", "The mass of the moving gantry, in grams", true)
+    .addOption(OptionType.NUMBER, "movement-length", "The distance of the movement, in mm", true)
 
 class AccelCommand : Command("accel", cmd, false) {
     override fun execute(member: Member, event: SlashCommandInteractionEvent) {
@@ -101,15 +101,15 @@ class AccelCommand : Command("accel", cmd, false) {
         embed.addField("Desired speed", "${givenSpeed}mm/s", true)
         embed.addField("Distance where speed is matched", "${round((maxDistance - minDistance) * 2)}mm", true)
         embed.addField(
-            "Amount of movement with desired speed covered",
+            "Movement distance with desired speed covered",
             "${round(((maxDistance - minDistance) * 2) / length * 100)}%",
             true,
         )
-        embed.addField("Movement length", "${length}mm", true)
+        embed.addField("Movement distance", "${length}mm", true)
         val duration = timeToFullSpeed + (round((maxDistance - minDistance) * 2) / givenSpeed) + timeToFullSpeed
         embed.addField("Movement duration", "${round(duration * 1000) / 1000}s", true)
         embed.addField("Time to full speed", "${(timeToFullSpeed)}s", true)
-        embed.addField("Distance to move until full speed", "${round((distanceToFullSpeed))}mm", true)
+        embed.addField("Distance to move until reaching full speed", "${round((distanceToFullSpeed))}mm", true)
         embed.setImage("attachment://temp.png")
         event.replyEmbeds(embed.build()).addFiles(FileUpload.fromData(temp)).queue()
         temp.delete()

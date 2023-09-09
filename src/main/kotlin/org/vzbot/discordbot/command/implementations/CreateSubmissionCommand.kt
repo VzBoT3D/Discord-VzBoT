@@ -18,7 +18,7 @@ class CreateSubmissionCommand: Command("submit",dat , false) {
 
         if (submissionDAO.hasSubmission(member.idLong)) {
             val sub = submissionDAO.getSubmission(member.idLong)
-            event.replyEmbeds(defaultEmbed("You already have sent your submission- ID: ${sub.id}")).queue()
+            event.replyEmbeds(defaultEmbed("You have already sent in your submission with ID: ${sub.id}")).queue()
             return
         }
 
