@@ -1,4 +1,6 @@
-# Discord-VZBot
+# Discord-VzBoT
+
+*A friendly and Vz Bot*
 
 This bot (mainly) manages several functions on the VzBoT Discord server:
 
